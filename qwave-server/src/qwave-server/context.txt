@@ -1,0 +1,189 @@
+
+goals:
+# import flow
+- import files via the network from any device, so that you don't need to ssh in or have direct access to the server
+- possible full album uploading at once? any more than that and it's difficult to do content recognition, so it's risky to allow dropping files directly into the directory. probably store music in a database
+- transcode as soon as the file is imported to the most efficient file type to stream and play, probably OPUS
+- find title and artist automatically if they're not already in the metadata (content fingerprinting?)
+- automatically categorize into artist and genres, and allow sorting by that artist or that genre
+- for albums - my audience will likely have less media categorized into albums, but i still want to have it a feature. need to think about this
+- fetch lyrics and allow display; it's a bit much to expect timestamping, but that could be done by others' clients
+
+# playback
+- allow media integration for play/pause/skip, allow seeking, shuffle mode and queueing
+- probably no album covers or artist tiles. it feels unnecessary and like it'd be a lot of load to fetch and transfer (thoughts?)
+
+# misc
+- allow serving of custom theme colors and server logo/name
+- audio normalization?
+
+####################
+
+qWave - Lightweight Open-Source Audio Server
+PROJECT CONTEXT FOR DEVELOPMENT
+Core Purpose: Audio-only media server for Linux/homelab users wanting lighter resource usage than Jellyfin/Plex. Python backend with FastAPI, designed for single-core/low-end hardware including Raspberry Pi. Separate client/server architecture allows third-party client development.
+Development Philosophy: Vanilla Python, avoid scope creep, design for extensibility, prioritize low resource usage. NOT intended for audiophiles or internet exposure - local network only.
+STORAGE & TRANSCODING STRATEGY
+All imports transcoded to OPUS at user-configurable bitrate (96k-256k, capped at source quality). Single bitrate chosen during initial server setup and LOCKED - cannot be changed afterward to avoid confusion and prevent need for re-transcoding entire library.
+Upload process: User uploads file to server (creates copy), server transcodes copy to OPUS, verifies transcode success (duration matches within tolerance, file exists and plays), deletes the uploaded copy on success. Original source files remain with user - they are NOT deleted. CLI bulk import works on user's local files without copying them, so originals are never touched.
+Users responsible for their own backups of source files. Optional future feature: metadata backup function.
+Accepted formats: MP3, FLAC, WAV, OGG, M4A. File size limit: 200MB per upload (generous for FLAC, users can use CLI for larger files). Reject video files. Use ffmpeg for transcoding.
+Concurrent uploads: Not concerned about concurrent write issues at expected scale. SQLite handles this adequately for homelab use.
+FILE ORGANIZATION ON DISK
+Human-readable directory structure with path sanitization:
+music/
+Artist Name/
+Album Name (YYYY)/
+01 - Track Name.opus
+Album Name (YYYY) (2)/
+01 - Track Name.opus
+singles/
+Track Name.opus
+Path sanitization rules:
+
+Albums with identical names from same artist: append release year as (YYYY)
+If metadata still matches (same year, multi-disc releases): append (1), (2), etc
+Filesystem-safe character replacement for special characters in names
+Filename collisions: append (2), (3) suffix
+
+Database stores full paths. Singles are tracks without album associations. For multi-artist tracks, use primary artist directory.
+ARCHITECTURE DECISIONS
+Backend: FastAPI with REST API and automatic OpenAPI documentation
+Database: SQLite with SQLAlchemy ORM
+Background Jobs: Python queue with worker thread plus jobs table for persistence and resumability
+Authentication: Simple session tokens (UUID-based) stored in database, no JWT complexity needed for local network use. Password hashing with passlib/bcrypt. Session expiry is passive - check expiration on each request, no dedicated cleanup job needed at this scale.
+Multi-user: Support multiple users but designed for trusted local network, not internet exposure.
+DATABASE SCHEMA
+users
+
+id (primary key)
+username (unique)
+password_hash
+created_at
+
+sessions
+
+id (primary key)
+user_id (foreign key to users)
+token (unique UUID)
+created_at
+expires_at
+
+tracks
+
+id (primary key)
+title
+duration (seconds)
+file_path (original upload path, for reference only)
+opus_path (transcoded file path)
+lyrics (text, nullable)
+track_number (integer, nullable)
+album_id (foreign key to albums, nullable)
+added_date
+added_by_user_id (foreign key to users)
+cover_art_path (nullable, future feature)
+
+albums
+
+id (primary key)
+title
+release_date (nullable)
+album_artist_id (foreign key to artists, nullable for Various Artists)
+
+artists
+
+id (primary key)
+name (unique)
+
+track_artists (many-to-many junction)
+
+track_id (foreign key to tracks)
+artist_id (foreign key to artists)
+is_primary (boolean, distinguishes main artist from features/collaborators)
+
+genres
+
+id (primary key)
+name (unique)
+
+track_genres (many-to-many junction)
+
+track_id (foreign key to tracks)
+genre_id (foreign key to genres)
+
+playlists
+
+id (primary key)
+name
+user_id (foreign key to users)
+is_public (boolean)
+created_at
+
+playlist_tracks
+
+playlist_id (foreign key to playlists)
+track_id (foreign key to tracks)
+position (integer for ordering)
+
+jobs (for background task persistence and resumability)
+
+id (primary key)
+type (enum: transcode, fingerprint, etc)
+status (enum: pending, running, complete, failed)
+track_id (foreign key to tracks, nullable)
+created_at
+started_at (nullable)
+completed_at (nullable)
+error_message (text, nullable)
+
+Job resumability behavior: If transcode job dies mid-process and partial transcoded file exists, delete the partial file and restart job from beginning. Deduplication already handled at import stage. Do NOT delete job log entry until job completes successfully or fails permanently. This allows status tracking and retry logic.
+IMPORT FLOW
+Web Upload Flow:
+
+Accept upload via network API, maximum 200MB per file (no SSH required)
+Save uploaded file to temporary location (this is the copy that gets deleted later)
+Extract metadata from file tags with mutagen (title, artist, album, duration, track number)
+If metadata missing: optional AcoustID fingerprinting (ONLY if user has configured their own API key in server settings, opt-in feature)
+If still missing: filename parsing as fallback
+Last resort: flag for user review (web interface shows pending tracks needing manual input)
+Create database entry and queue transcoding job
+Worker processes job, verifies transcode, deletes uploaded copy on success
+Original source file remains with user, untouched
+
+CLI Bulk Import Flow:
+
+Scan directory recursively for audio files on user's local system
+Extract metadata from each file, flag problematic ones
+Batch fingerprint flagged files if AcoustID enabled (requires user-configured API key)
+Present all unresolved files at once with filename-based guesses
+User corrects metadata in single session (simple prompts or basic TUI)
+Queue all transcoding jobs to jobs table
+Worker processes queue in background, reading from user's local files
+User's original files are NEVER deleted or modified - they remain in place
+User can check job status via CLI or API
+
+SEARCH & ORGANIZATION
+SQLite FTS5 for full-text search on track titles. Metadata-based filtering by artist, genre, date range. Manual genre tagging (auto-categorization too unreliable). Artist organization via many-to-many relationship supports features and collaborations. Albums optional - singles exist as tracks with album_id = NULL. Future consideration: lyric search if computationally cheap.
+STREAMING
+Single OPUS bitrate per server chosen at setup and locked permanently. HTTP range request support for seeking (critical feature). Proper Content-Type headers and byte range handling. Media session integration for play/pause/skip controls.
+FEATURES DEFERRED OR SKIPPED
+Album covers: schema supports (nullable cover_art_path) but not implemented initially
+Timestamped lyrics: too complex, left to third-party clients
+Duplicate detection: nice-to-have, not essential
+Audio normalization: possible ReplayGain in polish phase
+Playing audio clips in CLI during bulk import: polish phase feature
+SERVER CUSTOMIZATION
+Allow configuration of custom theme colors, server name, and logo for web interface. OPUS bitrate set during initial setup and cannot be changed afterward.
+DEVELOPMENT ROADMAP
+Phase 1 - Foundation: FastAPI boilerplate, SQLite schema implementation, SQLAlchemy models, CLI database initialization tool. Include server setup wizard for bitrate selection.
+Phase 2 - Basic Auth: User registration/login with password hashing, session token generation and validation with passive expiry checking, middleware for protected endpoints. Implement early to avoid refactoring later.
+Phase 3 - Basic Import: File upload endpoint with 200MB limit, metadata extraction with mutagen, store uploaded copies and create database entries, basic CLI import command. Test: upload properly-tagged file, verify database entry.
+Phase 4 - Streaming Core: Endpoints to list/filter tracks, serve audio files with HTTP range request support, learn Content-Type headers and byte ranges. Test: play file in browser or with curl, verify seeking works.
+Phase 5 - Transcoding: Background job queue with worker thread, jobs table for persistence, ffmpeg transcoding to OPUS on import, verify transcode before deleting uploaded copy, job resumability logic (delete partial files on restart), job status endpoint. Test: upload file, watch transcode job, stream result, test job recovery after simulated crash.
+Phase 6 - Enhanced Import: Missing metadata detection, optional AcoustID integration (user must configure own API key), filename parsing fallback, user review queue for unresolved tracks. Test: import poorly-tagged files, verify fallback logic.
+Phase 7 - Search & Organization: SQLite FTS5 integration, genre tagging API, advanced filtering (artist, genre, date range), album support with path sanitization (year suffix, disc numbers). Test: search across library with various filters, verify album organization with edge cases.
+Phase 8 - Playlists: Playlist CRUD endpoints, public/private flag handling, position ordering, per-user upload tracking. Test: create playlists, reorder tracks, share public playlist between users.
+Phase 9 - Basic Web Client: HTML/CSS/JS interface with upload form (200MB limit displayed), track listing with search, audio player with controls, queue management, playlist interface. Test: use qWave without direct API access.
+Phase 10 - Polish: Lyrics fetching and display, server customization (theme, name, logo), improved error handling and logging, API documentation, optional ReplayGain normalization, CLI audio preview during bulk import.
+DEVELOPER NOTES
+FastAPI and SQLAlchemy experience: Minimal, learning as we go. Prioritize understanding concepts over rushing implementation. Authentication will be walked through step-by-step when reached. Jobs table prevents lost work on restart and allows crash recovery. Timeline is flexible, order matters more than speed to prevent scope creep. Path sanitization prevents filesystem conflicts and maintains human readability.
