@@ -6,8 +6,32 @@ from typing import Optional
 
 @dataclass
 class Config:
+    # Server
+    server_name: str
+    host:        str
+    port:        int
+    
+    # DB
     database_url: str
-    ... # TODO: add all the thingies
+
+    # Audio
+    opus_bitrate:       int #kbps
+    max_upload_size_mb: int
+
+    # Paths
+    music_dir: Path
+    temp_dir:  Path
+    
+    # Content ID
+    acoustid_enabled:    bool
+    acoustid_api_key:    Optional[str]
+    musicbrainz_enabled: bool
+
+    # Customizing
+    theme_primary_color:   str
+    theme_secondary_color: str
+    background_url:        Optional[str]
+    logo_url:              Optional[str]
 
 _config: Optional[Config] = None
 
