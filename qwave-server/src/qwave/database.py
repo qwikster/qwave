@@ -10,7 +10,7 @@ from qwave.config import get_config
 _engine = None
 _SessionLocal = None
 
-def init_db(database_url: Optional[str] = None):
+def init_db(database_url: str = None):
     global _engine, _SessionLocal
     
     if database_url is None:

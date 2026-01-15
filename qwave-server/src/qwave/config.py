@@ -55,7 +55,7 @@ def find_config_file() -> Path:
         
     raise FileNotFoundError("no config file could be found!")
 
-def load_config(config_path: Optional[Path] = None) -> Config:
+def load_config(config_path: Path = None) -> Config:
     global _config
     
     if config_path is None:
