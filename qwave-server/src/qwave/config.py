@@ -37,7 +37,23 @@ _config: Optional[Config] = None
 
 def find_config_file() -> Path:
     # QWAVE_CONFIG env variable, ./config.yaml, ~/.config/qwave/config.yaml, /etc/qwave/config.yaml
-    return Path.home() # TODO: search through standard locations
+    if env_config := os.getenv("QWAVE_CONFIG"):
+        path = Path(env_config)
+        if path.exists():
+            return path
+        raise FileNotFoundError(f"couldn't find the config file you set in env!")
+    
+    locations = [
+        Path.cwd() / "config.yaml",            # Dev (shouldn't happen)
+        Path.home() / "qwave" / "config.yaml", # User install
+        Path("/srv/qwave/config.yaml")         # Server install
+    ]
+    
+    for i in locations:
+        if i.exists():
+            return i
+        
+    raise FileNotFoundError("no config file could be found!")
 
 def load_config(config_path: Optional[Path] = None) -> Config:
     global _config
@@ -61,8 +77,21 @@ def load_config(config_path: Optional[Path] = None) -> Config:
     
     # TODO: make sure they're created in the init.py run as well as pick locations
     _config = Config(
-        ... = ...,
-        ... = ..., 
+        server_name =           data.get("server_name", "qwave"),
+        host =                  data.get("host", "0.0.0.0"),
+        port =                  data.get("port", 4269),
+        database_url =          f"sqlite:///{database_path}",
+        opus_bitrate =          data.get("opus_bitrate", 196),
+        max_upload_size_mb =    data.get("max_upload_size_mb", 200),
+        music_dir =             music_dir,
+        temp_dir =              temp_dir,
+        acoustid_enabled =      data.get("acoustid_enabled", False),
+        acoustid_api_key =      data.get("acoustid_api_key"),
+        musicbrainz_enabled =   data.get("musicbrainz_enabled", True),
+        theme_primary_color =   data.get("theme_primary_color", "#14f5aa"),
+        theme_secondary_color = data.get("theme_secondary_color", "#ff499e"),
+        logo_url =              data.get("logo_url"),
+        background_url =        data.get("background_url"),
     )
     
     return _config
