@@ -1,6 +1,9 @@
+import os
 import sys
 import yaml
+from time import sleep
 from pathlib import Path
+from elevate import elevate
 from typing import Optional
 from getpass import getpass
 from passlib.hash import bcrypt
@@ -23,6 +26,21 @@ def logo():
 def get_offset():
     return ((get_term_size()[0] // 2) - 26)
 
+def prompt_box(title: str, lines: list) -> None:
+    logo()
+    print(screen_center(f"{col1}╔════════════════════════════════════════════════╗"))
+    print(screen_center(f"{col1}║ {text_center(title, 46)} ║"))
+    print(screen_center(f"{col1}╠════════════════════════════════════════════════╣"))
+    for i in lines:
+        ln = display_width(i)
+        print(screen_center(f"{col1}║ " + i + " "*(46 - ln) + " ║"))
+    print(screen_center(f"{col1}╚════════════════════════════════════════════════╝"))
+
+def title_box(title: str) -> None:
+    logo()
+    print(screen_center(f"{col1}╔════════════════════════════════════════════════╗"))
+    print(screen_center(f"{col1}║ {text_center(title, 46)} ║"))
+    print(screen_center(f"{col1}╚════════════════════════════════════════════════╝"))
 
 def install_type() -> Path:
     print(screen_center(f"{col1}╔════════════════════════════════════════════════╗"))
@@ -35,26 +53,86 @@ def install_type() -> Path:
     print(screen_center(f"{col1}║ {col2}[3] {col1}Custom directory! {col2}(may require root!)      {col1}║"))
     print(screen_center(f"{col1}╚════════════════════════════════════════════════╝"))
     install_type = prompt_int(default = 1, min_val = 1, max_val = 3, offset = get_offset())
-    
-    if install_type == "1":
+
+    if install_type == 1:
         data_dir = Path("/srv/qwave")
-    
-    elif install_type == "2":
+        title_box(f"{col2}Installer will restart as root!{col1}")
+        sleep(0.75 if os.geteuid() != 0 else 0)
+        elevate(graphical = False)
+        
+    elif install_type == 2:
         data_dir = Path.home() / "qwave"
         
-    elif install_type == "3":
+    elif install_type == 3:
         data_dir = Path(prompt("Config path?", "/srv/qwave", get_offset()))
+        title_box(f"{col2}Installer will restart as root!{col1}")
+        sleep(0.75 if os.geteuid() != 0 else 0)
+        elevate(graphical = False)
         
     if not data_dir.parent.exists():
         try:
             data_dir.parent.mkdir(parents = True, exist_ok = True)
         except PermissionError:
-            print(f"\n{col2}Permission denied! Run the installer as root ({col1}sudo{col2})")
+            print(f"\n{col2}Permission denied! Please run the installer as root ({col1}sudo{col2})")
             sys.exit(1)
+    
+    if os.geteuid() != 0 and install_type != 2:
+        print(screen_center(f"\n{col2}Permission denied! Please run the installer as root ({col1}sudo{col2})"))
+        sys.exit(1)
         
     return data_dir
 
+def configure_server(data_dir):
+    config = {}
+    logo()
+    title_box("Pick a cool or unique name for your server!!")
+    config["server_name"] = prompt(default = "qWave", offset = get_offset())
+    title_box(f"Server IP? (pick {col2}0.0.0.0{col1} if unsure!)")
+    config["host"] = prompt(default = "0.0.0.0", offset = get_offset())
+    title_box("Pick a port to connect to qWave's web client.")
+    config["port"] = prompt_int(default = 4269, min_val = 1024, max_val = 49151, offset = get_offset())
 
+    prompt_box("Bitrate for files to be transcoded to:", lines = [
+        "I recommend one of the following:",
+        f"{col2}64kbps{col1}: Minimum filesize but sounds poor",
+        f"{col2}128k{col1}: Okay for low-end speakers",
+        f"{col2}196k{col1}: Decent standard file size (default)",
+        f"{col2}256k{col1}: High definition audio!",
+        f">> {col2}qWave does not support lossless audio :({col1}"])
+    config["opus_bitrate"] = prompt_int(f"You shouldn't ever change this!\n{" " * get_offset()}", 196, 32, 256, get_offset())
+
+    title_box(f"Max file upload size? ({col2}MB{col1})")
+    config["max_upload_size_mb"] = prompt_int(default = 256, min_val = 8, max_val = 8192, offset = get_offset())
+    prompt_box(f"Enable metadata lookup via {col2}MusicBrainz{col1}?", ["(Free, no API key)", f"{col2}!{col1} This will send {col2}all file names and metadata{col1}", "to MusicBrainz's servers on file upload."])
+    config["musicbrainz_enabled"] = prompt_yn(None, True, get_offset())
+    prompt_box(f"Enable Content ID via {col2}acoustid.org{col1}?", [f"{col2}!{col1} Requires a free API key", f"{col2}!{col1} This will send {col2}files without metadata/info{col1}", "to their servers on upload."])
+    config["acoustid_enabled"] = prompt_yn(None, False, get_offset())
+    
+    if config["acoustid_enabled"]:
+        title_box("Register: https://acoustid.org/api-key")
+        config["acoustid_api_key"] = prompt("", offset = get_offset())
+    else:
+        config["acoustid_api_key"] = None
+        
+    prompt_box("Review your final settings:", [
+        f"Name: {col2}{config["server_name"]}{col1}",
+        f"IP: {col2}{config["host"]}{col1}",
+        f"Port: {col2}{config["port"]}{col1}",
+        f"Location: {col2}{data_dir}{col1}",
+        f"Bitrate: {col2}{config["opus_bitrate"]}{col1}",
+        f"Max upload: {col2}{config["max_upload_size_mb"]}{col1}",
+        f"Musicbrainz: {col2}{config["musicbrainz_enabled"]}{col1}",
+        f"AcoustID: {col2}{config["acoustid_enabled"]}{col1}",
+    ])
+    print(screen_center("(Wait 2s...)"))
+    sleep(2)
+    cont = prompt_yn("Does this look right to you?", True, get_offset())
+    if cont:
+        return config
+    else:
+        sys.exit(0)
+        
+    
 def main():
     while get_term_size()[0] <= 64:
         clear()
@@ -66,6 +144,12 @@ def main():
         sys.exit(1)
     
     data_dir = install_type()
+    
+    if data_dir.exists():
+        print(f"{col2}{data_dir}{col1} already exists!!\nPlease clear it manually if you are sure you want to overwrite it.")
+        sys.exit(0)
+    
+    config = configure_server(data_dir)
     
 def entry():
     try:

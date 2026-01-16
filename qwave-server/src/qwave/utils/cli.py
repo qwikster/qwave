@@ -49,8 +49,10 @@ def prompt_yn(message: str = None, default: bool = True, offset: int = 0) -> boo
 
 def prompt_int(message: str = None, default: int = None, min_val: int = None, max_val: int = None, offset: int = 0) -> int:
     while True:
-        response = prompt(message, str(default), offset = offset)
+        response = prompt(message = f"{message if message else ""}{f"[{min_val}-{max_val}]" if min_val else ""}", default = default, offset = offset)
         try:
+            if response == "" or response is None:
+                return int(response)
             value = int(response)
             if min_val is not None and value < min_val:
                 print("That's not an option!")
@@ -60,7 +62,7 @@ def prompt_int(message: str = None, default: int = None, min_val: int = None, ma
                 continue
             return value
         except ValueError:
-            print()
+            print("That's not a number!")
             
 logo = [
     "\x1b[0m \x1b[0m \x1b[0m \x1b[0m \x1b[0m \x1b[0m \x1b[38;2;18;23;22m▄\x1b[38;2;18;23;22m▄\x1b[38;2;18;23;22m▄\x1b[38;2;18;23;22m▄\x1b[38;2;18;23;22m▄\x1b[38;2;18;23;22m▄\x1b[0m \x1b[0m \x1b[0m \x1b[0m \x1b[0m \x1b[0m \x1b[0m \x1b[0m \x1b[0m \x1b[0m \x1b[0m \x1b[0m \x1b[0m \x1b[0m \x1b[0m \x1b[0m \x1b[0m \x1b[0m \x1b[0m \x1b[0m \x1b[0m \x1b[0m \x1b[0m \x1b[0m \x1b[0m \x1b[0m \x1b[0m \x1b[0m \x1b[0m \x1b[0m \x1b[0m \x1b[0m \x1b[0m \x1b[0m \x1b[0m \x1b[0m \x1b[0m \x1b[0m \x1b[0m \x1b[0m \x1b[0m \x1b[0m \x1b[0m \x1b[0m \x1b[0m \x1b[0m \x1b[0m \x1b[0m \x1b[0m \x1b[0m \x1b[0m",
