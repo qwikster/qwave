@@ -131,8 +131,41 @@ def configure_server(data_dir):
         return config
     else:
         sys.exit(0)
-        
+
+
+def create_config(data_dir, config):
+    logo()
+    title_box("writing config...")
+    data_dir.mkdir(parents = True, exist_ok = True)
+    config_data = {
+        'server_name':   config['server_name'],
+        'host':          config['host'],
+        'port':          config['port'],
+        'database_path': str(data_dir / "qwave.db"),
+        'music_dir':     str(data_dir / "music"),
+        'temp_dir':      str(data_dir / "temp"),
+        'opus_bitrate':  config['opus_bitrate'],
+        'max_upload_size_mb': config['max_upload_size_mb'],
+        'acoustid_enabled':   config['acoustid_enabled'],
+        'acoustid_api_key':   config['acoustid_api_key'],
+        'musicbrainz_enabled': config['musicbrainz_enabled'],
+        'theme_primary_color': str("#14F5AA"),
+        'theme_secondary_color': str("#FF499E"),
+        'logo_url': None,
+        'background_url': None,
+    }
     
+    with open(data_dir / "qwave.ini", 'w') as f:
+        f.write("# qWave server config\n\n")
+        yaml.dump(config_data, f, default_flow_style = False, sort_keys = False)
+        
+    title_box(f"{col2}✓{col1}config written!")
+
+
+def dbinit():
+    pass
+
+
 def main():
     while get_term_size()[0] <= 64:
         clear()
@@ -150,6 +183,11 @@ def main():
         sys.exit(0)
     
     config = configure_server(data_dir)
+    create_config(data_dir, config)
+    database_url = f"sqlite:///{data_dir / 'qwave.db'}"
+    
+    dbinit(database_url)
+    
     
 def entry():
     try:
