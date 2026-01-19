@@ -1,17 +1,19 @@
 import os
 import sys
 import yaml
+import bcrypt
 from time import sleep
 from pathlib import Path
 from elevate import elevate
 from typing import Optional
 from getpass import getpass
-from passlib.hash import bcrypt
 from importlib.metadata import version
+from random import shuffle
 
-from qwave.utils.cli import print_logo, clear, goto, get_termcol, display_width, text_center, screen_center, get_term_size, prompt, prompt_yn, prompt_int
+from qwave.utils.cli import print_logo, clear, get_termcol, display_width, text_center, screen_center, get_term_size, prompt, prompt_yn, prompt_int
 from qwave.database import init_db, create_tables, get_session
 from qwave.models import User
+from qwave.utils.splash import splash_text
 
 col1 = get_termcol((20, 245, 170))
 col2 = get_termcol((255, 73, 158))
@@ -43,8 +45,10 @@ def title_box(title: str) -> None:
     print(screen_center(f"{col1}╚════════════════════════════════════════════════╝"))
 
 def install_type() -> Path:
+    splash = list(splash_text)
+    shuffle(splash)
     print(screen_center(f"{col1}╔════════════════════════════════════════════════╗"))
-    print(screen_center(f"{col1}║  Thanks for picking {col2}qWave{col1}!! you are very cool  ║"))
+    print(screen_center(f"{col1}║ {text_center(splash[0], 46)} ║"))
     print(screen_center(f"{col1}╠════════════════════════════════════════════════╣"))
     print(screen_center(f"{col1}║ {col2}Step 1{col1}: How (where) should qWave be installed? ║"))
     print(screen_center(f"{col1}╟────────────────────────────────────────────────╢"))
@@ -162,8 +166,52 @@ def create_config(data_dir, config):
     title_box(f"{col2}✓{col1}config written!")
 
 
-def dbinit():
-    pass
+def dbinit(database_url: str):
+    title_box("Create Admin User: pick a username")
+    while True:
+        username = prompt(default = "admin", offset = get_offset())
+        if not username:
+            print(" " * get_offset() + f"{col2}Username cannot be empty!{col1}")
+            continue
+        if len(username) < 3:
+            print(" " * get_offset() + f"{col2}Username must be at least 3 characters{col1}")
+            continue
+        break
+        
+    title_box("Create Admin User: choose a password")
+    while True:
+        password = getpass("Password >... ")
+        if not password:
+            print(" " * get_offset() + f"{col2}Password cannot be empty{col1}")
+            continue
+        if len(password) < 4:
+            print(" " * get_offset() + f"{col2}Password must be at least 4 characters")
+            continue
+    
+        password_confirm = getpass("Confirm password >...")
+        if password != password_confirm:
+            print(" " * get_offset() + f"{col2}Passwords do not match, try again...{col1}")
+            continue
+        break
+
+    title_box("Creating database...")
+    init_db(database_url)
+    create_tables()
+    
+    session = get_session()
+    try:
+        password_hash = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+        user = User(username = username, password_hash = password_hash)
+        session.add(user)
+        session.commit()
+    except Exception as e:
+        session.rollback()
+        print(" " * get_offset() + f"{col2}ERROR CREATING USER: {col1}{e}")
+        print(" " * get_offset() + "You may have to manually delete the install.")
+        sys.exit(1)
+    finally:
+        session.close()
+    title_box(f"User {username} created successfully!")
 
 
 def main():
@@ -187,6 +235,7 @@ def main():
     database_url = f"sqlite:///{data_dir / 'qwave.db'}"
     
     dbinit(database_url)
+    # success message here
     
     
 def entry():
@@ -196,5 +245,3 @@ def entry():
         clear()
         print(f"{col1}goodbye!{col2}")
         sys.exit(0)
-        
-         
