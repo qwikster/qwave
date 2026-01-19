@@ -1,8 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 from contextlib import contextmanager
-from pathlib import Path
-from typing import Generator, Optional
+from typing import Generator
 
 from qwave.models import Base
 from qwave.config import get_config

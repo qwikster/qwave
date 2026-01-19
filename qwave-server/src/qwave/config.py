@@ -38,15 +38,15 @@ _config: Optional[Config] = None
 def find_config_file() -> Path:
     # QWAVE_CONFIG env variable, ./config.yaml, ~/.config/qwave/config.yaml, /etc/qwave/config.yaml
     if env_config := os.getenv("QWAVE_CONFIG"):
-        path = Path(env_config)
+        path = Path(env_config / "qwave.ini")
         if path.exists():
             return path
-        raise FileNotFoundError(f"couldn't find the config file you set in env!")
+        raise FileNotFoundError("couldn't find the config file you set in env!")
     
     locations = [
-        Path.cwd() / "config.yaml",            # Dev (shouldn't happen)
-        Path.home() / "qwave" / "config.yaml", # User install
-        Path("/srv/qwave/config.yaml")         # Server install
+        Path.cwd() / "qwave.ini",            # Dev (shouldn't happen)
+        Path.home() / "qwave" / "qwave.ini", # User install
+        Path("/srv/qwave/qwave.ini")         # Server install
     ]
     
     for i in locations:

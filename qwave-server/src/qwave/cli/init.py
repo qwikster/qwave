@@ -5,7 +5,6 @@ import bcrypt
 from time import sleep
 from pathlib import Path
 from elevate import elevate
-from typing import Optional
 from getpass import getpass
 from importlib.metadata import version
 from random import shuffle
@@ -235,7 +234,12 @@ def main():
     database_url = f"sqlite:///{data_dir / 'qwave.db'}"
     
     dbinit(database_url)
-    # success message here
+    
+    prompt_box("Installation completed successfully!!", [
+        f"Start qwave: {col2}qwave{col1}",
+         "If you used a custom path, prepend:",
+        f"{col2}QWAVE_CONFIG={data_dir}/qwave.ini{col1}",
+    ])
     
     
 def entry():
