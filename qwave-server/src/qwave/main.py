@@ -2,15 +2,19 @@ import sys
 import uvicorn
 
 from pathlib import Path
-from fastapi import FastAPI
 from contextlib import asynccontextmanager
+from importlib.metadata import version
+
+from fastapi import FastAPI
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.openapi.docs import get_swagger_ui_html, get_redoc_html
+from fastapi.middleware.cors import CORSMiddleware
 
 from qwave.config import load_config, get_config
 from qwave.cli.init import prompt_box
 from qwave.database import init_db, create_tables
-from importlib.metadata import version
 # from qwave.workers.worker import start_worker, stop_worker
-from fastapi.middleware.cors import CORSMiddleware
 
 # from qwave.api import ...
 # TODO: add workers and routers
@@ -60,13 +64,45 @@ def create_app() -> FastAPI:
         description = "Lightweight audio-only media server",
         version =     version("qwave"),
         lifespan =    lifespan,
-        docs_url =    "/docs",
-        redoc_url=    "/redoc",
+        docs_url = None, redoc_url = None
     )
     
-    # TODO: CORS, root endpoint, /health, routers
+    app.mount("/static", StaticFiles(directory=Path(__file__).resolve().parent / "static"), name = "static")
+    
+    app.add_middleware(
+        CORSMiddleware,
+        # FIXME: THIS IS NOT SECURE FOR PUBLIC EXPOSURE
+        allow_origins = ["*"],
+        allow_credentials = True,
+        allow_methods = ["*"],
+        allow_headers = ["*"],
+    )
+    
+    @app.get("/", tags = ["root"], include_in_schema = False)
+    def read_root(): # TODO: This is where the webapp client links in
+        config = get_config()
+        return {
+            "message": "qWave is running!",
+            "server_name": config.server_name,
+            "version": version("qwave"),
+        }
+        
+    @app.get("/health", tags = ["root"])
+    def health_check():
+        return {"status": "healthy"} # TODO: lmao what if it's not
+        
+    @app.get("/docs")
+    def get_docs() -> HTMLResponse:
+        return get_swagger_ui_html(
+            openapi_url = app.openapi_url,
+            title = "qWave API",
+            swagger_favicon_url = "/static/favicon.png")
+    
+    # TODO: ADD ALL THE ROUTERS HERE
+    # app.include_router(bnuuy.router, prefix = "/bnuuy", tags = ["bnuuy"])
     
     return app
+
 
 def entry():
     load_config()
