@@ -18,8 +18,9 @@ col1 = get_termcol((20, 245, 170))
 col2 = get_termcol((255, 73, 158))
 offset = 0
 
-def logo():
-    clear()
+def logo(cls: bool = True):
+    if cls:
+        clear()
     print_logo(center = True)
     print(screen_center(f"{col1}(by {col2}@qwik{col1}, version {col2}{version("qwave")}{col1})!!"))
     print()
@@ -27,8 +28,8 @@ def logo():
 def get_offset():
     return ((get_term_size()[0] // 2) - 26)
 
-def prompt_box(title: str, lines: list) -> None:
-    logo()
+def prompt_box(title: str, lines: list, cls: bool = True) -> None:
+    logo(cls)
     print(screen_center(f"{col1}╔════════════════════════════════════════════════╗"))
     print(screen_center(f"{col1}║ {text_center(title, 46)} ║"))
     print(screen_center(f"{col1}╠════════════════════════════════════════════════╣"))
