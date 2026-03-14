@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from qwave.models import User, Session as SessionModel
 
 def utc_now():
-    return datetime.now(timezone.utc)
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 def hash_password(password: str) -> str:
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
@@ -33,7 +33,8 @@ def create_session(db: Session, user_id: int) -> SessionModel:
     session = SessionModel(
         user_id = user_id,
         token = token,
-        expires_at = expires_at
+        expires_at = expires_at,
+        created_at = utc_now()
     )
     db.add(session)
     db.commit()
@@ -41,15 +42,13 @@ def create_session(db: Session, user_id: int) -> SessionModel:
 
     return session
 
-def authenticate(db: Session, username: str, password: str) -> Optional[User]:
+def authenticate_user(db: Session, username: str, password: str) -> Optional[User]:
     user = db.query(User).filter(User.username == username).first()
     if not user:
         return None
     if not verify_password(password, user.password_hash):
         return None
-    return User
-
-authenticate_user = authenticate
+    return user
 
 def get_user_by_token(db: Session, token: str) -> Optional[User]:
     session = db.query(SessionModel).filter(SessionModel.token == token).first()

@@ -69,7 +69,7 @@ def register(request: RegisterRequest, db: Session = Depends(get_db)):
 
 @router.post("/login", response_model = LoginResponse)
 def login(request: LoginRequest, db: Session = Depends(get_db)):
-    user = auth_service.authenticate(db, request.username, request.password)
+    user = auth_service.authenticate_user(db, request.username, request.password)
     if not user:
         raise HTTPException(
             status_code = status.HTTP_401_UNAUTHORIZED,
@@ -77,9 +77,8 @@ def login(request: LoginRequest, db: Session = Depends(get_db)):
         )
 
     session = auth_service.create_session(db, user.id)
-
     return LoginResponse(
-        tokem = session.token,
+        token = session.token,
         user_id = user.id,
         expires_at = session.expires_at.isoformat()
     )
