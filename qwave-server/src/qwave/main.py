@@ -16,6 +16,7 @@ from qwave.cli.init import prompt_box
 from qwave.database import init_db, create_tables
 from qwave.workers.worker import start_worker, stop_worker
 
+from qwave.api import auth
 # from qwave.api import ...
 # TODO: add workers and routers
 
@@ -100,7 +101,8 @@ def create_app() -> FastAPI:
     
     # TODO: ADD ALL THE ROUTERS HERE
     # app.include_router(bnuuy.router, prefix = "/bnuuy", tags = ["bnuuy"])
-    
+    app.include_router(auth.router, prefix = "/auth", tags = ["auth"])
+
     return app
 
 
