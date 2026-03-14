@@ -15,6 +15,7 @@ qwave-server/                    │ top level python package ==================
 │                                │
 ├ services/                      │ logic called by routes and cli ==============
 │  ├ __init__.py                 │
+│  ├ auth_service.py             │ login for users
 │  ├ import_service.py           │ import flow (auto > fingerprint > manual)
 │  ├ metadata_service.py         │ mutagen > MusicBrainz > AccoustID
 │  ├ transcode_service.py        │ called by worker to pretranscode to opus
