@@ -14,7 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from qwave.config import load_config, get_config
 from qwave.cli.init import prompt_box
 from qwave.database import init_db, create_tables
-# from qwave.workers.worker import start_worker, stop_worker
+from qwave.workers.worker import start_worker, stop_worker
 
 # from qwave.api import ...
 # TODO: add workers and routers
@@ -39,7 +39,7 @@ async def lifespan(app: FastAPI):
         print(f"[ERROR] Failed to init database: {e}")
         sys.exit(0)
     print("[INFO] Starting worker...")
-    # TODO: start_worker()
+    start_worker()
     print("[INFO] Worker started")
     
     prompt_box(f"Server '{config.server_name}' started!", [
