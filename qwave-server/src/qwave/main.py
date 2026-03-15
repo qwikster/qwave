@@ -54,7 +54,7 @@ async def lifespan(app: FastAPI):
     print("======================================")
     print("[INFO] Shutting down!!")
     print("[INFO] Stopping worker...")
-    # TODO: stop_worker()
+    stop_worker()
     print("[SUCCESS] Worker stopped!")
     print("[SUCCESS] goodbye!")
         
