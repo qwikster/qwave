@@ -89,3 +89,32 @@ def list_artists(
     ]
 
     return ArtistListResponse(artists = artists, total = total)
+
+@router.get("/{artist_id}", response_model = ArtistDetail)
+def get_artist(
+    artist_id: int,
+    user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+
+    artist = db.query(Artist).filter(Artist.id == artist_id).first()
+    if not artist:
+        raise HTTPException(
+            status_code = status.HTTP_404_NOT_FOUND,
+            detail = "Artist not found"
+        )
+
+    track_count = db.query(func.count(track_artists.c.track_id)).filter(
+        track_artists.c.artist_id == artist_id
+    ).scalar() or 0
+
+    album_count = db.query(func.count(Album.id)).filter(
+        Album.album_artist_id == artist_id
+    ).scalar() or 0
+
+    return ArtistDetail(
+        id = artist.id,
+        name = artist.name,
+        track_count = track_count,
+        album_count = album_count
+    )
