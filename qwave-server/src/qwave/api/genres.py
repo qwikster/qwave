@@ -16,9 +16,7 @@ class CreateGenreRequest(BaseModel):
 class GenreSummary(BaseModel):
     id: int
     name: str
-    
-    class Config:
-        from_attributes = True
+    track_count: int
 
 class GenreResponse(BaseModel):
     id: int
@@ -27,46 +25,31 @@ class GenreResponse(BaseModel):
     class Config:
         from_attributes = True
 
-class GenresResponse(BaseModel):
-    genres: List[GenreSummary]
-
-class TrackSummary(BaseModel):
-    id: int
-    title: str
-    duration: float
-    artists: List[dict]
-
-    class Config:
-        from_attributes = True
-
-class TracksResponse(BaseModel):
-    tracks: List[TrackSummary]
-    total: int
-
-
-@router.get("", response_model = GenresResponse)
+@router.get("", response_model = dict)
 def list_genres(
     user = Depends[get_current_user],
-    db: Session = Depends[get_current_user]
+    db: Session = Depends[get_db]
 ):
-    genres_query = db.query(
-        Genre, func.count(track_genres.c.track_id).label('track_count')
+    genres = db.query(
+        Genre.id,
+        Genre.name,
+        func.count(Track.id).label('track_count')
     ).outerjoin(
         track_genres, Genre.id == track_genres.c.genre_id
-    ).group_by(Genre.id)
+    ).outerjoin(
+        Track, track_genres.c.track_id == Track.id
+    ).group_by(Genre.id).order_by(Genre.name).all()
 
-    genres_data = genres_query.all()
-
-    genres = [
-        GenreSummary(
-            id = genre.id,
-            name = genre.name,
-            track_count = track_count or 0
-        )
-        for genre, track_count in genres_data
-    ]
-    
-    return GenresResponse(genres=genres)
+    return {
+        "genres": [
+            {
+                "id": g.id,
+                "name": g.name,
+                "track_count": g.track_count or 0
+            }
+            for g in genres
+        ]
+    }
 
 @router.post("", response_model = GenreResponse, status_code = status.HTTP_201_CREATED)
 def create_genre(
@@ -88,4 +71,37 @@ def create_genre(
 
     return GenreResponse(id = genre.id, name = genre.name)
 
-@
+@router.get("/{genre_id}/tracks", response_model = dict)
+def get_genre_tracks(
+    genre_id: int,
+    limit: int = 128,
+    offset: int = 0,
+    user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    genre = db.query(Genre).filter(Genre.id == genre_id).first()
+    if not genre:
+        raise HTTPException(
+            status_code = status.HTTP_404_NOT_FOUND,
+            detail = "Genre not found!"
+        )
+
+    tracks_query = db.query(Track).join(
+        track_genres
+    ).filter(track_genres.c.genre_id == genre_id).order_by(Track.title)
+
+    total = tracks_query.count()
+    tracks = tracks_query.offset(offset).limit(limit).all()
+
+    return {
+        "tracks": [
+            {
+                "id": t.id,
+                "title": t.title,
+                "duration": int(t.duration),
+                "artists": [] # TODO: populate when i finish artists.py
+            }                 # ...im gonna forget about this
+            for t in tracks
+        ],
+        "total": total
+    }
