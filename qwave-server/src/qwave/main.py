@@ -16,7 +16,7 @@ from qwave.cli.init import prompt_box
 from qwave.database import init_db, create_tables
 from qwave.workers.worker import start_worker, stop_worker
 
-from qwave.api import auth, server
+from qwave.api import auth, server, artists, genres
 # from qwave.api import ...
 # TODO: add workers and routers
 
@@ -103,6 +103,8 @@ def create_app() -> FastAPI:
     # app.include_router(bnuuy.router, prefix = "/bnuuy", tags = ["bnuuy"])
     app.include_router(auth.router, prefix = "/auth", tags = ["auth"])
     app.include_router(server.router, prefix="/server", tags = ["server"])
+    app.include_router(artists.router, prefix = "/artists", tags = ["artists"])
+    app.include_router(genres.router, prefix = "/genres", tags = ["genres"])
     return app
 
 

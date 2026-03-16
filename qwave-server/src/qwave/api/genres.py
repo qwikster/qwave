@@ -27,8 +27,8 @@ class GenreResponse(BaseModel):
 
 @router.get("", response_model = dict)
 def list_genres(
-    user = Depends[get_current_user],
-    db: Session = Depends[get_db]
+    user = Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
     genres = db.query(
         Genre.id,
