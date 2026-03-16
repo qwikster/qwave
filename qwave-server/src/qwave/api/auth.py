@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from qwave.models import User
 from qwave.database import get_db
 from qwave.services import auth_service
+from qwave.utils.logging import log_item
 
 router = APIRouter()
 # endpoints: /register /login /logout /me
@@ -56,6 +57,7 @@ def get_current_user(token: str = Depends(get_current_token), db: Session = Depe
 def register(request: RegisterRequest, db: Session = Depends(get_db)):
     try:
         user = auth_service.create_user(db, request.username, request.password)
+        log_item(f"New user: {user.username} / {user.id}", "WARN")
         return UserResponse(
             user_id = user.id,
             username = user.username,
@@ -77,6 +79,7 @@ def login(request: LoginRequest, db: Session = Depends(get_db)):
         )
 
     session = auth_service.create_session(db, user.id)
+    log_item(f"User {user.id} / {user.name} logged in with token {session.token}", "INFO")
     return LoginResponse(
         token = session.token,
         user_id = user.id,

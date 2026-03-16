@@ -8,41 +8,37 @@ from importlib.metadata import version
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi.openapi.docs import get_swagger_ui_html, get_redoc_html
+from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.middleware.cors import CORSMiddleware
 
 from qwave.config import load_config, get_config
 from qwave.cli.init import prompt_box
-from qwave.database import init_db, create_tables
+from qwave.database import init_db
+from qwave.utils.logging import log_item, clear_log
 from qwave.workers.worker import start_worker, stop_worker
 
-from qwave.api import auth, server, artists, genres
-# from qwave.api import ...
-# TODO: add workers and routers
+from qwave.api import auth, server, artists, genres, albums
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # FIXME: add color codes from config and stylize
-    print("[INFO] Starting qWave...")
-    print("[INFO] Loading config...")
+    clear_log()
+    log_item("Starting qWave", "INFO")
     try:
         config = load_config()
-        print(f"[SUCCESS] Config loaded from {config.music_dir.parent / 'qwave.ini'}")
+        log_item(f"Config loaded from {config.music_dir.parent / 'qwave.ini'}", "SUCCESS")
     except Exception as e:
-        print(f"[ERROR] {e}\nTry running qwave_init?")
+        log_item(f"{e} - Try running qwave_init?", "ERROR")
         sys.exit(1)
     
-    print("[INFO] Connecting to database...")
+    log_item("Connecting to database...", "INFO")
     try:
         init_db()
-        print(f"[SUCCESS] Database connected: {config.database_url}")
+        log_item(f"Connected to database {config.database_url}", "SUCCESS")
     except Exception as e:
-        print(f"[ERROR] Failed to init database: {e}")
-        sys.exit(0)
-    print("[INFO] Starting worker...")
+        log_item("Failed to init database: {e}", "ERROR")
+        sys.exit(1)
     start_worker()
-    print("[INFO] Worker started")
-    
+    log_item("Server started!", "SUCCESS")
     prompt_box(f"Server '{config.server_name}' started!", [
         f"Listening on: http://{config.host}:{config.port}",
         f"API docs: http://{config.host}:{config.port}/docs",
@@ -51,12 +47,9 @@ async def lifespan(app: FastAPI):
     
     yield
     
-    print("======================================")
-    print("[INFO] Shutting down!!")
-    print("[INFO] Stopping worker...")
+    log_item("Shutting down...", "WARN")
     stop_worker()
-    print("[SUCCESS] Worker stopped!")
-    print("[SUCCESS] goodbye!")
+    log_item("goodbye!", "SUCCESS")
         
         
 def create_app() -> FastAPI:
@@ -65,7 +58,7 @@ def create_app() -> FastAPI:
         description = "Lightweight audio-only media server",
         version =     version("qwave"),
         lifespan =    lifespan,
-        docs_url = None, redoc_url = None
+        docs_url = None
     )
     
     app.mount("/static", StaticFiles(directory=Path(__file__).resolve().parent / "static"), name = "static")
@@ -101,10 +94,11 @@ def create_app() -> FastAPI:
     
     # TODO: ADD ALL THE ROUTERS HERE
     # app.include_router(bnuuy.router, prefix = "/bnuuy", tags = ["bnuuy"])
-    app.include_router(auth.router, prefix = "/auth", tags = ["auth"])
-    app.include_router(server.router, prefix="/server", tags = ["server"])
+    app.include_router(auth.router,    prefix = "/auth",    tags = ["auth"])
+    app.include_router(server.router,  prefix = "/server",  tags = ["server"])
     app.include_router(artists.router, prefix = "/artists", tags = ["artists"])
-    app.include_router(genres.router, prefix = "/genres", tags = ["genres"])
+    app.include_router(genres.router,  prefix = "/genres",  tags = ["genres"])
+    app.include_router(albums.router,  prefix = "/albums",  tags = ["albums"])
     return app
 
 

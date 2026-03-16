@@ -5,15 +5,15 @@ from typing import Optional
 
 from qwave.database import session_scope
 from qwave.models import Job
+from qwave.utils.logging import log_item
 
 _worker_thread: Optional[threading.Thread] = None
 _job_queue: queue.Queue = queue.Queue()
 _stop_event = threading.Event()
 
 def process_job(job: Job):
-    # TODO: dedicated logging system?
-    print(f"Processing job {job.id} ({job.type})")
-    
+    log_item(content=f"Processing {job.id} ({job.type})", type="JOB")
+
     with session_scope() as session:
         db_job = session.query(Job).filter(Job.id == job.id).first()
         if db_job:
@@ -29,10 +29,10 @@ def process_job(job: Job):
             db_job.status = "complete"
             db_job.completed_at = time.time()
     
-    print(f"Job {job.id} complete")
+    log_item(f"Completed {job.id}", "JOB")
 
 def worker_loop():
-    print("Worker thread started")
+    log_item("Worker thread started", "SUCCESS")
 
     while not _stop_event.is_set():
         try:
@@ -41,7 +41,7 @@ def worker_loop():
             try:
                 process_job(job)
             except Exception as e:
-                print(f"Error processing job {job.id}: {e}")
+                log_item(f"Error processing job {job.id}: {e}", "ERROR")
 
                 with session_scope() as session:
                     db_job = session.query(Job).filter(Job.id == job.id).first()
@@ -58,13 +58,14 @@ def worker_loop():
                 for job in pending_jobs:
                     _job_queue.put(job)
     
-    print("Worker thread stopped")
+    log_item("Worker thread stopped!", "WARN")
 
 def start_worker():
     global _worker_thread
+    log_item("Starting worker...", "INFO")
 
     if _worker_thread is not None and _worker_thread.is_alive():
-        print("Worker already running!!")
+        log_item("Worker is already running!!", "WARN")
         return
 
     _stop_event.clear()
@@ -76,7 +77,7 @@ def start_worker():
         for job in pending_jobs:
             _job_queue.put(job)
         if pending_jobs:
-            print(f"Loaded {len(pending_jobs)} jobs from db")
+            log_item(f"Loaded {len(pending_jobs)} jobs from db", "INFO")
 
 def stop_worker():
     global _worker_thread
