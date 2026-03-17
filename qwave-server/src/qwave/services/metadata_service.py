@@ -61,55 +61,92 @@ def empty_metadata(file_path: Path) -> Dict[str, Any]:
         "genre":        None,
     }
 
-def id3_str(audio, tag: str) -> Optional[str]:
-    frame = audio.get(tag)
-    return frame.text[0] if frame and frame.text else None
+def id3_get(audio, key: str) -> Optional[str]:
+    tag = audio.get(key)
+    return tag.text[0] if tag and tag.text else None
+
+# vorbis or mp4
+def data_get(audio, key: str) -> Optional[str]:
+    values = audio.get(key)
+    return values[0] if values else None
 
 def extract_id3(audio) -> Dict[str, Any]:
-    tags = {}
-
     # what the shit were the ID3 devs on what is this
-    tags["title"] = str(audio["TIT2"]) or None
-    tags["artist"] = str(audio["TPE1"]) or None
-    tags["album"] = str(audio["TALB"]) or None
-    tags["album_artist"] = str(audio["TPE2"]) or None
+    tags = {
+        "title":        id3_get(audio, "TIT2"),
+        "artist":       id3_get(audio, "TPE1"),
+        "album":        id3_get(audio, "TALB"),
+        "album_artist": id3_get(audio, "TPE2"),
+        "genre":        id3_get(audio, "TCON"),
+        "track_number": None,
+        "year":         None
+    }
     try:
-        tags["track_number"] = int(str(audio["TRCK"]).split("/")[0]) or None
-        tags["year"] = int(str(audio["TDRC"])[:4]) or None
+        trck = id3_get(audio, "TRCK")
+        tags["track_number"] = int(trck.split("/")[0]) if trck else None
+    except (ValueError, IndexError):
+        pass
+    
+    try:
+        date = id3_get(audio, "TDRC")
+        tags["year"] = int(str(date)[:4]) if date else None
     except (ValueError, IndexError):
         pass
 
     return tags
 
 def extract_vorbis(audio) -> Dict[str, Any]:
-    tags = {}
-
     # this is what a Sane Person does
-    tags["title"] = audio["title"][0] or None
-    tags["artist"] = audio["artist"][0] or None
-    tags["album"] = audio["album"][0] or None
-    tags["album_artist"] = audio["albumartist"][0] or None
+    tags = {
+        "title":        data_get(audio, "title"),
+        "artist":       data_get(audio, "artist"),
+        "album":        data_get(audio, "album"),
+        "album_artist": data_get(audio, "albumartist"),
+        "genre":        data_get(audio, "genre"),
+        "track_number": None,
+        "year":         None,
+    }
+
     try:
-        tags["track_number"] = int(audio["tracknumber"][0].split("/")[0]) or None
-        tags["year"] = int(audio["date"][0][:4]) or None
+        track_number = data_get(audio, "tracknumber")
+        tags["track_number"] = int(track_number.split("/")[0]) if track_number else None
+    except (ValueError, IndexError):
+        pass
+
+    try:
+        date = data_get(audio, "date")
+        tags["year"] = int(date[:4]) if date else None
     except (ValueError, IndexError):
         pass
 
     return tags
 
 def extract_mp4(audio) -> Dict[str, Any]:
-    tags = {}
-
     # NOT AFGAIN NOOOOO
-    tags["title"] = audio["\xa9nam"][0] or None
-    tags["artist"] = audio["\xa9ART"][0] or None
-    tags["album"] = audio["\xa9alb"][0] or None
-    tags["album_artist"] = audio["aART"][0] or None
+    # \xa9 is © why
+    tags = {
+        "title":        data_get(audio, "\xa9nam"),
+        "artist":       data_get(audio, "\xa9ART"),
+        "album":        data_get(audio, "\xa9alb"),
+        "album_artist": data_get(audio, "aART"), # why
+        "genre":        data_get(audio, "\xa9gen"),
+        "track_number": None,
+        "year":         None,
+    }
+
     try:
-        tags["track_number"] = audio["trkn"][0][0] or None
-        tags["year"] = int(audio["\xa9day"][0][:4])
-    except (ValueError, IndexError, TypeError):
+        trkn = audio.get("trkn")
+        tags["track_number"] = trkn[0][0] if trkn else None
+    except (IndexError, TypeError):
         pass
+
+    try:
+        day = data_get(audio, "\xa9day")
+        tags["year"] = int(day[:4]) if day else None
+    except (IndexError, TypeError):
+        pass
+
+    return tags
 
 ver = version("qwave")
 BASE_URL = "https://musicbrainz.org/ws/2"
