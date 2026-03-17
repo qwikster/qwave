@@ -88,7 +88,7 @@ def create_app() -> FastAPI:
     @app.get("/docs")
     def get_docs() -> HTMLResponse:
         return get_swagger_ui_html(
-            openapi_url = app.openapi_url,
+            openapi_url = app.openapi_url if app.openapi_url is not None else "/openapi.json",
             title = "qWave API",
             swagger_favicon_url = "/static/favicon.png")
     

@@ -48,9 +48,9 @@ def prompt_yn(message: Optional[str] = None, default: bool = True, offset: int =
         return default
     return response in ("y", "yes")
 
-def prompt_int(message: str = None, default: int = None, min_val: int = None, max_val: int = None, offset: int = 0) -> int:
+def prompt_int(message: Optional[str] = None, default: Optional[int] = None, min_val: Optional[int] = None, max_val: Optional[int] = None, offset: int = 0) -> int:
     while True:
-        response = prompt(message = f"{message if message else ""}{f"[{min_val}-{max_val}]" if min_val else ""}", default = default, offset = offset)
+        response = prompt(message = f"{message if message else ""}{f"[{min_val}-{max_val}]" if min_val else ""}", default = str(default), offset = offset)
         try:
             if response == "" or response is None:
                 return int(response)

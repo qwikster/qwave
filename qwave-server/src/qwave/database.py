@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 from contextlib import contextmanager
-from typing import Generator
+from typing import Generator, Optional
 
 from qwave.models import Base
 from qwave.config import get_config
@@ -9,7 +9,7 @@ from qwave.config import get_config
 _engine = None
 _SessionLocal = None
 
-def init_db(database_url: str = None):
+def init_db(database_url: Optional[str] = None):
     global _engine, _SessionLocal
     
     if database_url is None:

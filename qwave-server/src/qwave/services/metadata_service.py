@@ -1,9 +1,9 @@
 import time
 import httpx
-import mutagen
 
 from typing import Optional, Dict, Any
 from pathlib import Path
+from mutagen._file import File
 from mutagen.mp3 import MP3
 from mutagen.mp4 import MP4
 from mutagen.wave import WAVE
@@ -18,7 +18,7 @@ from qwave.utils.log_item import log_item
 
 def extract(file_path: Path) -> Dict[str, Any]:
     try:
-        audio = mutagen.File(file_path)
+        audio = File(file_path)
 
         if audio is None:
             return empty_metadata(file_path)
