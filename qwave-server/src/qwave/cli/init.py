@@ -67,8 +67,8 @@ def install_type() -> Path:
     elif install_type == 2:
         data_dir = Path.home() / "qwave"
         
-    elif install_type == 3:
-        data_dir = Path(prompt("Config path?", "/srv/qwave", get_offset()))
+    else:
+        data_dir = Path(prompt("Custom config path?", "/srv/qwave", get_offset()))
         title_box(f"{col2}Installer will restart as root!{col1}")
         sleep(0.75 if os.geteuid() != 0 else 0)
         elevate(graphical = False)

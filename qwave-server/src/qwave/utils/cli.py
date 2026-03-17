@@ -1,6 +1,7 @@
 import re
 import sys
 from shutil import get_terminal_size
+from typing import Optional
 
 def clear() -> None:
     sys.stdout.write("\x1b[2J\x1b[H")
@@ -31,7 +32,7 @@ def screen_center(text: str) -> str:
 def get_term_size() -> tuple[int, int]:
     return get_terminal_size((80, 24))
 
-def prompt(message: str = None, default: str = None, offset: int = 0) -> str:
+def prompt(message: Optional[str] = None, default: Optional[str] = None, offset: int = 0) -> str:
     if default:
         response = input(" " * offset + f"{message if message else ""} [Default: {default}] >... ").strip()
         return response if response else default
@@ -40,7 +41,7 @@ def prompt(message: str = None, default: str = None, offset: int = 0) -> str:
         if response:
             return response
 
-def prompt_yn(message: str = None, default: bool = True, offset: int = 0) -> bool:
+def prompt_yn(message: Optional[str] = None, default: bool = True, offset: int = 0) -> bool:
     df = "Y/n" if default else "y/N"
     response = input(" " * offset + f"{message} [{df}] >... ").strip().lower()
     if not response:
