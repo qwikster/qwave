@@ -55,11 +55,8 @@ def find_config_file() -> Path:
         
     raise FileNotFoundError("no config file could be found!")
 
-def load_config(config_path: Path = None) -> Config:
+def load_config(config_path: Path = find_config_file()) -> Config:
     global _config
-    
-    if config_path is None:
-        config_path = find_config_file()
 
     with open(config_path) as f:
         data = yaml.safe_load(f)
@@ -98,5 +95,5 @@ def load_config(config_path: Path = None) -> Config:
 
 def get_config() -> Config:
     if _config is None:
-        raise RuntimeError("config is not loaded!!")
+        return load_config()
     return _config

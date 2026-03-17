@@ -2,7 +2,9 @@ from pathlib import Path
 from qwave.services.metadata_service import extract, search_musicbrainz
 
 # dont fucking use this in prod...
-test_path = Path(input("toss ur audio path lmao\n"))
+blah = input("toss ur audio path lmao\n")
+test_path = Path(blah)
+
 if test_path.exists():
     print("Metadata:")
     metadata = extract(test_path)
