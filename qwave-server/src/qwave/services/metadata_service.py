@@ -8,6 +8,8 @@ from mutagen.mp3 import MP3
 from mutagen.mp4 import MP4
 from mutagen.wave import WAVE
 from mutagen.flac import FLAC
+from mutagen.aiff import AIFF
+from mutagen.oggopus import OggOpus
 from mutagen.oggvorbis import OggVorbis
 from importlib.metadata import version
 
@@ -32,10 +34,10 @@ def extract(file_path: Path) -> Dict[str, Any]:
             "genre": None,
         }
 
-        match type(audio):
-            case MP3() | WAVE():
+        match audio:
+            case MP3() | WAVE() | AIFF():
                 metadata.update(extract_id3(audio))
-            case FLAC() | OggVorbis():
+            case FLAC() | OggVorbis() | OggOpus():
                 metadata.update(extract_vorbis(audio))
             case MP4():
                 metadata.update(extract_mp4(audio))
@@ -152,8 +154,59 @@ ver = version("qwave")
 BASE_URL = "https://musicbrainz.org/ws/2"
 USER_AGENT = f"qWave/{ver} (https://github.com/qwikster/qwave)"
 
+rate_limit = time.time()
+
 def search_musicbrainz(
     title: Optional[str] = None,
     artist: Optional[str] = None
 ) -> Optional[Dict[str, Any]]:
+    global rate_limit
     config = get_config()
+
+    # this is really funny to me for absolutely 0 reason
+    if (not config.musicbrainz_enabled) or (not title and not artist):
+        return None
+    
+    query_parts = []
+    if title:
+        query_parts.append(f'recording:"{title}"')
+    if artist:
+        query_parts.append(f'recording:"{artist}"')
+    query = ' AND '.join(query_parts)
+
+    try:
+        if time.time() - rate_limit <= 1:
+            time.sleep(1)
+            log_item("MusicBrainz rate limit hit!", "WARN")
+
+        with httpx.Client() as client:
+            rate_limit = time.time()
+            response = client.get(
+                f"{BASE_URL}/recording/",
+                params = {"query": query, "fmt": "json", "limit": 1},
+                headers = {"User-Agent": USER_AGENT},
+                timeout = 10.0
+            )
+
+            if response.status_code != 200:
+                log_item(f"MusicBrainz returned {response.status_code}", "WARN")
+                return None
+            
+            data = response.json()
+            if not data.get("recordings"):
+                return None
+            
+            recording = data["recordings"]
+            metadata = {
+                "title":  recording["title"] if "title" in recording else None,
+                "artist": recording["artist-credit"][0]["name"] if "artist_credit" in recording and recording["artist-credit"] else None,
+                "album":  recording["releases"][0].get("title") if "releases" in recording and recording["releases"] else None,
+            }
+
+            try:
+                metadata["year"] = int(recording["releases"][0]["date"][:4]) if "date" in recording["releases"][0] else None
+            except (ValueError, IndexError):
+                pass
+
+    except Exception as e:
+        log_item(f"MusicBrainz search error: {e}", "WARN")
