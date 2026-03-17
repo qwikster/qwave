@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from qwave.models import Album, Artist, Track
 from qwave.database import get_db
 from qwave.api.auth import get_current_user
-from qwave.utils.logging import log_item
+from qwave.utils.log_item import log_item
 
 router = APIRouter()
 

@@ -14,7 +14,7 @@ from mutagen.oggvorbis import OggVorbis
 from importlib.metadata import version
 
 from qwave.config import get_config
-from qwave.utils.logging import log_item
+from qwave.utils.log_item import log_item
 
 def extract(file_path: Path) -> Dict[str, Any]:
     try:
@@ -196,9 +196,9 @@ def search_musicbrainz(
             if not data.get("recordings"):
                 return None
             
-            recording = data["recordings"]
+            recording = data["recordings"][0]
             metadata = {
-                "title":  recording["title"] if "title" in recording else None,
+                "title":  recording.get("title"),
                 "artist": recording["artist-credit"][0]["name"] if "artist_credit" in recording and recording["artist-credit"] else None,
                 "album":  recording["releases"][0].get("title") if "releases" in recording and recording["releases"] else None,
             }

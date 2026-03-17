@@ -5,7 +5,7 @@ from typing import Optional
 
 from qwave.database import session_scope
 from qwave.models import Job
-from qwave.utils.logging import log_item
+from qwave.utils.log_item import log_item
 
 _worker_thread: Optional[threading.Thread] = None
 _job_queue: queue.Queue = queue.Queue()

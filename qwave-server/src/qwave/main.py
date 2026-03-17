@@ -14,7 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from qwave.config import load_config, get_config
 from qwave.cli.init import prompt_box
 from qwave.database import init_db
-from qwave.utils.logging import log_item, clear_log
+from qwave.utils.log_item import log_item, clear_log
 from qwave.workers.worker import start_worker, stop_worker
 
 from qwave.api import auth, server, artists, genres, albums
@@ -35,7 +35,7 @@ async def lifespan(app: FastAPI):
         init_db()
         log_item(f"Connected to database {config.database_url}", "SUCCESS")
     except Exception as e:
-        log_item("Failed to init database: {e}", "ERROR")
+        log_item(f"Failed to init database: {e}", "ERROR")
         sys.exit(1)
     start_worker()
     log_item("Server started!", "SUCCESS")
