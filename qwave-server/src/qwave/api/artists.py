@@ -11,51 +11,43 @@ from qwave.api.auth import get_current_user
 router = APIRouter()
 
 class ArtistSummary(BaseModel):
-    id: int
-    name: str
-    track_count: int
-    album_count: int
-
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}
+    id:            int
+    name:          str
+    track_count:   int
+    album_count:   int
 
 class ArtistDetail(BaseModel):
-    id: int
-    name: str
-    track_count: int
-    album_count: int
-
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}
+    id:            int
+    name:          str
+    track_count:   int
+    album_count:   int
 
 class ArtistListResponse(BaseModel):
-    artists: List[ArtistSummary]
-    total: int
+    artists:       List[ArtistSummary]
+    total:         int
 
 class TrackSummary(BaseModel):
-    id: int
-    title: str
-    duration: float
-    album: Optional[dict]
-
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}
+    id:            int
+    title:         str
+    duration:      float
+    album:         Optional[dict]
 
 class TracksResponse(BaseModel):
-    tracks: List[TrackSummary]
-    total: int
+    tracks:        List[TrackSummary]
+    total:         int
 
 class AlbumSummary(BaseModel):
-    id: int
-    title: str
-    release_date: Optional[str]
-    track_count: int
-
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}
+    id:            int
+    title:         str
+    release_date:  Optional[str]
+    track_count:   int
 
 class AlbumsResponse(BaseModel):
-    albums: List[AlbumSummary]
+    albums:        List[AlbumSummary]
 
 @router.get("", response_model = ArtistListResponse)
 def list_artists(

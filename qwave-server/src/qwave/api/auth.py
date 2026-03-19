@@ -11,28 +11,26 @@ router = APIRouter()
 # endpoints: /register /login /logout /me
 
 class RegisterRequest(BaseModel):
-    username: str = Field(..., min_length = 3, max_length = 255)
-    password: str = Field(..., min_length = 4)
+    username:      str = Field(..., min_length = 3, max_length = 255)
+    password:      str = Field(..., min_length = 4)
 
 class LoginRequest(BaseModel):
-    username: str
-    password: str
+    username:      str
+    password:      str
 
 class UserResponse(BaseModel):
-    user_id: int
-    username: str
-    created_at: str
-
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}
+    user_id:       int
+    username:      str
+    created_at:    str
 
 class LoginResponse(BaseModel):
-    token: str
-    user_id: int
-    expires_at: str
+    token:         str
+    user_id:       int
+    expires_at:    str
 
 class MessageResponse(BaseModel):
-    message: str
+    message:       str
 
 
 def get_current_token(authorization: str = Header(None)) -> str:

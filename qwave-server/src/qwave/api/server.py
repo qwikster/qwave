@@ -8,14 +8,14 @@ router = APIRouter()
 # /info /config
 
 class ServerInfoResponse(BaseModel):
-    name: str
-    theme_colors: dict
-    logo_url: Optional[str]
-    background_url: Optional[str]
+    name:               str
+    theme_colors:       dict
+    logo_url:           Optional[str]
+    background_url:     Optional[str]
 
 class ServerConfigResponse(BaseModel):
-    opus_bitrate: int
-    acoustid_enabled: bool
+    opus_bitrate:       int
+    acoustid_enabled:   bool
     max_upload_size_mb: int
 
 @router.get("/info", response_model = ServerInfoResponse)

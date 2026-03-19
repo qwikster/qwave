@@ -13,28 +13,28 @@ from qwave.utils.log_item import log_item
 router = APIRouter()
 
 class AlbumSummary(BaseModel):
-    id: int
-    title: str
+    id:           int
+    title:        str
     release_date: Optional[str]
     album_artist: Optional[dict]
-    track_count: int
+    track_count:  int
 
 class TrackInAlbum(BaseModel):
-    id: int
-    title: str
+    id:           int
+    title:        str
     track_number: Optional[int]
-    duration: int
-    artists: List[dict]
+    duration:     int
+    artists:      List[dict]
 
 class AlbumDetail(BaseModel):
-    id: int
-    title: str
+    id:           int
+    title:        str
     release_date: Optional[str]
     album_artist: Optional[dict]
-    tracks: List[TrackInAlbum]
+    tracks:       List[TrackInAlbum]
 
 class UpdateAlbumRequest(BaseModel):
-    title: Optional[str] = Field(None, min_length = 1, max_length = 255)
+    title:        Optional[str] = Field(None, min_length = 1, max_length = 255)
     release_date: Optional[str] = None # ISO date string
 
 @router.get("", response_model = dict)

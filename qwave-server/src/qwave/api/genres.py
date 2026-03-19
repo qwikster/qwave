@@ -10,20 +10,18 @@ from qwave.database import get_db
 router = APIRouter()
 
 class CreateGenreRequest(BaseModel):
-    name: str = Field(..., min_length = 1, max_length = 128)
+    name:          str = Field(..., min_length = 1, max_length = 128)
 
 class GenreSummary(BaseModel):
-    id: int
-    name: str
-    track_count: int
+    id:            int
+    name:          str
+    track_count:   int
 
 class GenreResponse(BaseModel):
-    id: int
-    name: str
+    model_config = {"from_attributes": True}
+    id:            int
+    name:          str
     
-    class Config:
-        from_attributes = True
-
 @router.get("", response_model = dict)
 def list_genres(
     user = Depends(get_current_user),
