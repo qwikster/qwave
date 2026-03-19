@@ -1,12 +1,10 @@
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy import func
-from sqlalchemy.orm import Session
 
 from qwave.models import Artist, Track, Album, track_artists
-from qwave.database import get_db
-from qwave.api.auth import get_current_user
+from qwave.depends import DBDep, UserDep
 
 router = APIRouter()
 
@@ -50,13 +48,7 @@ class AlbumsResponse(BaseModel):
     albums:        List[AlbumSummary]
 
 @router.get("", response_model = ArtistListResponse)
-def list_artists(
-    limit: int = 128,
-    offset: int = 0,
-    user = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-
+def list_artists(user: UserDep, db: DBDep, limit: int = 128, offset: int = 0):
     artists_query = db.query(
         Artist,
         func.count(func.distinct(track_artists.c.track_id)).label('track_count'),
@@ -83,12 +75,7 @@ def list_artists(
     return ArtistListResponse(artists = artists, total = total)
 
 @router.get("/{artist_id}", response_model = ArtistDetail)
-def get_artist(
-    artist_id: int,
-    user = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-
+def get_artist(user: UserDep, db: DBDep, artist_id: int):
     artist = db.query(Artist).filter(Artist.id == artist_id).first()
     if not artist:
         raise HTTPException(
@@ -112,20 +99,14 @@ def get_artist(
     )
 
 @router.get("/{artist_id}/tracks", response_model = TracksResponse)
-def get_artist_tracks(
-    artist_id: int,
-    limit: int = 128,
-    offset: int = 0,
-    user = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
+def get_artist_tracks(user: UserDep, db: DBDep, artist_id: int, limit: int = 128, offset: int = 0,):
     artist = db.query(Artist).filter(Artist.id == artist_id).first()
     if not artist:
         raise HTTPException(
             status_code = status.HTTP_404_NOT_FOUND,
             detail = "Artist not found"
         )
-    
+
     tracks_query = db.query(Track).join(
         track_artists, Track.id == track_artists.c.track_id
     ).filter(track_artists.c.artist_id == artist_id)
@@ -149,18 +130,14 @@ def get_artist_tracks(
     return TracksResponse(tracks = track_summaries, total = total)
 
 @router.get("/{artist_id}/albums", response_model = AlbumsResponse)
-def get_artist_albums(
-    artist_id: int,
-    user = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
+def get_artist_albums(user: UserDep, db: DBDep, artist_id: int):
     artist = db.query(Artist).filter(Artist.id == artist_id).first()
     if not artist:
         raise HTTPException(
             status_code = status.HTTP_404_NOT_FOUND,
             detail = "Artist not found!"
         )
-    
+
     albums_as_artist = db.query(Album).filter(
         Album.album_artist_id == artist_id
     ).all()

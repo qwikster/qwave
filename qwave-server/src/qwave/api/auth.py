@@ -1,9 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Header
 from pydantic import BaseModel, Field
-from sqlalchemy.orm import Session
 
 from qwave.models import User
-from qwave.database import get_db
+from qwave.depends import DBDep
 from qwave.services import auth_service
 from qwave.utils.log_item import log_item
 
@@ -41,7 +40,7 @@ def get_current_token(authorization: str = Header(None)) -> str:
         raise HTTPException(status_code = status.HTTP_401_UNAUTHORIZED, detail = "Missing auth header or it is in the wrong format")
     return parts[1]
 
-def get_current_user(token: str = Depends(get_current_token), db: Session = Depends(get_db)) -> User:
+def get_current_user(db: DBDep, token: str = Depends(get_current_token)) -> User:
     user = auth_service.get_user_by_token(db, token)
     if not user:
         raise HTTPException(
@@ -52,7 +51,7 @@ def get_current_user(token: str = Depends(get_current_token), db: Session = Depe
 
 
 @router.post("/register", response_model = UserResponse, status_code = status.HTTP_201_CREATED)
-def register(request: RegisterRequest, db: Session = Depends(get_db)):
+def register(request: RegisterRequest, db: DBDep):
     try:
         user = auth_service.create_user(db, request.username, request.password)
         log_item(f"New user: {user.username} / {user.id}", "WARN")
@@ -68,7 +67,7 @@ def register(request: RegisterRequest, db: Session = Depends(get_db)):
         )
 
 @router.post("/login", response_model = LoginResponse)
-def login(request: LoginRequest, db: Session = Depends(get_db)):
+def login(request: LoginRequest, db: DBDep):
     user = auth_service.authenticate_user(db, request.username, request.password)
     if not user:
         raise HTTPException(
@@ -85,7 +84,7 @@ def login(request: LoginRequest, db: Session = Depends(get_db)):
     )
 
 @router.post("/logout", response_model = MessageResponse)
-def logout(token: str = Depends(get_current_token), db: Session = Depends(get_db)):
+def logout(db: DBDep, token: str = Depends(get_current_token)):
     success = auth_service.delete_session(db, token)
     if not success:
         raise HTTPException(status_code = status.HTTP_404_NOT_FOUND, detail = "Session not found")

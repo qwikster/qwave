@@ -1,11 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, Field
 from sqlalchemy import func
-from sqlalchemy.orm import Session
 
 from qwave.models import Genre, Track, track_genres
-from qwave.api.auth import get_current_user
-from qwave.database import get_db
+from qwave.depends import DBDep, UserDep
 
 router = APIRouter()
 
@@ -21,12 +19,9 @@ class GenreResponse(BaseModel):
     model_config = {"from_attributes": True}
     id:            int
     name:          str
-    
+
 @router.get("", response_model = dict)
-def list_genres(
-    user = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
+def list_genres(user: UserDep, db: DBDep,):
     genres = db.query(
         Genre.id,
         Genre.name,
@@ -49,18 +44,14 @@ def list_genres(
     }
 
 @router.post("", response_model = GenreResponse, status_code = status.HTTP_201_CREATED)
-def create_genre(
-    request: CreateGenreRequest,
-    user = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
+def create_genre(user: UserDep, db: DBDep, request: CreateGenreRequest):
     existing = db.query(Genre).filter(
         func.lower(Genre.name) == request.name.lower()
     ).first()
-    
+
     if existing:
         return GenreResponse(id = existing.id, name = existing.name)
-    
+
     genre = Genre(name = request.name)
     db.add(genre)
     db.commit()
@@ -69,13 +60,7 @@ def create_genre(
     return GenreResponse(id = genre.id, name = genre.name)
 
 @router.get("/{genre_id}/tracks", response_model = dict)
-def get_genre_tracks(
-    genre_id: int,
-    limit: int = 128,
-    offset: int = 0,
-    user = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
+def get_genre_tracks(user: UserDep, db: DBDep, genre_id: int, limit: int = 128, offset: int = 0):
     genre = db.query(Genre).filter(Genre.id == genre_id).first()
     if not genre:
         raise HTTPException(

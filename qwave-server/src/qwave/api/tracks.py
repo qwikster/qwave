@@ -1,14 +1,13 @@
 import tempfile
 
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
+from fastapi import APIRouter, HTTPException, status, UploadFile, File
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from qwave.models import User, Track, Artist, Album, Genre, Job, track_artists, track_genres
 from qwave.config import get_config
-from qwave.database import get_db
-from qwave.api.auth import get_current_user
+from qwave.depends import DBDep, UserDep
 
 router = APIRouter()
 
@@ -97,6 +96,8 @@ class MessageResponse(BaseModel):
 
 @router.get("", response_model = TrackListResponse)
 def list_tracks(
+    user:      UserDep,
+    db:        DBDep,
     artist_id: Optional[int] = None,
     album_id:  Optional[int] = None,
     genre_id:  Optional[int] = None,
@@ -105,89 +106,46 @@ def list_tracks(
     date_to:   Optional[str] = None,
     limit:     int           = 128,
     offset:    int           = 0,
-    user:      User          = Depends(get_current_user),
-    db:        Session       = Depends(get_db)
 ):
     pass
 
 @router.get("/{track_id}", response_model = TrackDetail)
-def get_track(
-    track_id: int,
-    user:     User =    Depends(get_current_user),
-    db:       Session = Depends(get_db)
-):
+def get_track(user: UserDep, db: DBDep, track_id: int):
     pass
 
 # TODO: allow adding data to track on upload instead of after
 @router.post("/upload", response_model = UploadResponse)
-async def upload_track(
-    file: UploadFile = File(...),
-    user: User       = Depends(get_current_user),
-    db:   Session    = Depends(get_db)
-):
+async def upload_track(user: UserDep, db: DBDep, file: UploadFile = File(...)):
     pass
 
 @router.patch("/{track_id}", response_model = UpdateTrackResponse)
-def update_track(
-    track_id: int,
-    request:  UpdateTrackRequest, # can i just tack this onto upload_track()?
-    user:     User    = Depends(get_current_user),
-    db:       Session = Depends(get_db)
-):
+def update_track(user: UserDep, db: DBDep, track_id: int, request: UpdateTrackRequest): # can i just tack this onto upload_track()?
     pass
 
 # i will hack this club
 @router.delete("/{track_id}", response_model = DeleteTrackResponse)
-def delete_track(
-    track_id: int,
-    user:     User    = Depends(get_current_user),
-    db:       Session = Depends(get_current_user)
-):
+def delete_track(user: UserDep, db: DBDep, track_id: int):
     pass
 
 @router.get("/{track_id}/artists", response_model = ArtistListResponse)
-def get_track_artists(
-    track_id: int,
-    user: User    = Depends(get_current_user),
-    db:   Session = Depends(get_db)
-):
+def get_track_artists(user: UserDep, db: DBDep, track_id: int):
     pass
 
 @router.post("/{track_id}/artists", response_model = AddArtistResponse)
-def add_track_artist(
-    track_id: int,
-    request:  AddArtistRequest,
-    user:     User    = Depends(get_current_user),
-    db:       Session = Depends(get_db)
-):
+def add_track_artist(user: UserDep, db: DBDep, track_id: int, request: AddArtistRequest):
     pass
 
 @router.delete("/{track_id}/artists/{artist_id}", response_model = MessageResponse)
-def remove_track_artist(
-    track_id:  int,
-    artist_id: int,
-    user:      User    = Depends(get_current_user),
-    db:        Session = Depends(get_db)
-):
+def remove_track_artist(user: UserDep, db: DBDep, track_id: int, artist_id: int):
     pass
 
 @router.post("/{track_id}/genres", response_model = MessageResponse)
-def add_track_genre(
-    track_id: int,
-    request:  GenreRequest,
-    user:     User    = Depends(get_current_user),
-    db:       Session = Depends(get_db)
-):
+def add_track_genre(user: UserDep, db: DBDep, track_id: int, request: GenreRequest):
     pass
 
 @router.delete("/{track_id}/genres/{genre_id}", response_model = MessageResponse)
-def remove_track_genre(
-    track_id: int,
-    genre_id: int,
-    user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
+def remove_track_genre(user: UserDep, db: DBDep, track_id: int, genre_id: int):
     pass
 
 def is_primary_artist(db: Session, track_id: int, artist_id: int) -> bool:
-    pass
+    return False

@@ -1,14 +1,12 @@
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, HTTPException, status#, Depends
 from pydantic import BaseModel, Field
 from datetime import datetime
 from sqlalchemy import func
-from sqlalchemy.orm import Session
+# from sqlalchemy.orm import Session
 
 from qwave.models import Album, Artist, Track
-from qwave.database import get_db
-from qwave.api.auth import get_current_user
-from qwave.utils.log_item import log_item
+from qwave.depends import DBDep, UserDep
 
 router = APIRouter()
 
@@ -39,12 +37,11 @@ class UpdateAlbumRequest(BaseModel):
 
 @router.get("", response_model = dict)
 def list_albums(
+    user: UserDep, db: DBDep,
     artist_id: Optional[int] = None,
     year: Optional[int] = None,
     limit: int = 128,
     offset: int = 0,
-    user = Depends(get_current_user),
-    db: Session = Depends(get_db)
 ):
     query = db.query(
         Album.id,
@@ -86,11 +83,7 @@ def list_albums(
     }
 
 @router.get("/{album_id}", response_model = dict)
-def get_album(
-    album_id: int,
-    user = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
+def get_album(user: UserDep, db: DBDep, album_id: int):
     album = db.query(Album).filter(Album.id == album_id).first()
     if not album:
         raise HTTPException(
@@ -135,12 +128,7 @@ def get_album(
     }
 
 @router.patch("/{album_id}", response_model = dict)
-def update_album(
-    album_id: int,
-    request: UpdateAlbumRequest,
-    user = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
+def update_album(user: UserDep, db: DBDep, album_id: int, request: UpdateAlbumRequest):
     album = db.query(Album).filter(Album.id == album_id).first()
     if not album:
         raise HTTPException(
@@ -179,10 +167,9 @@ def update_album(
             status_code = status.HTTP_400_BAD_REQUEST,
             detail = "Nothing to modify!"
         )
-    
+
     db.commit()
     db.refresh(album)
-    log_item(f'User {user.name} modified album "{album.title}"', "WARN")
 
     return {
         "id": album.id,

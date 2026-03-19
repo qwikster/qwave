@@ -5,7 +5,6 @@ from pydantic import BaseModel
 from qwave.config import get_config
 
 router = APIRouter()
-# /info /config
 
 class ServerInfoResponse(BaseModel):
     name:               str
