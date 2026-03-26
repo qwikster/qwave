@@ -6,5 +6,4 @@ splash_text = [
     "TODO: Write some splash texts",
     "Iiiiiiiit's BIGGERRRRRR!!!!",
     "the factory must grow",
-    
 ]

@@ -10,7 +10,7 @@ class Config:
     server_name: str
     host:        str
     port:        int
-    
+
     # DB
     database_url: str
 
@@ -21,7 +21,7 @@ class Config:
     # Paths
     music_dir: Path
     temp_dir:  Path
-    
+
     # Content ID
     acoustid_enabled:    bool
     acoustid_api_key:    Optional[str]
@@ -42,36 +42,38 @@ def find_config_file() -> Path:
         if path.exists():
             return path
         raise FileNotFoundError("couldn't find the config file you set in env!")
-    
+
     locations = [
         Path.cwd() / "qwave.ini",            # Dev (shouldn't happen)
         Path.home() / "qwave" / "qwave.ini", # User install
         Path("/srv/qwave/qwave.ini")         # Server install
     ]
-    
+
     for i in locations:
         if i.exists():
             return i
-        
+
     raise FileNotFoundError("no config file could be found!")
 
-def load_config(config_path: Path = find_config_file()) -> Config:
+def load_config(config_path: Optional[Path] = None) -> Config:
     global _config
+    if config_path is None:
+        config_path = find_config_file()
 
     with open(config_path) as f:
         data = yaml.safe_load(f)
-    
+
     def resolve_path(path_str: str) -> Path:
         path = Path(path_str)
         if not path.is_absolute():
             # make relative paths to config file location, should only be true in development or odd clone installs
             path = (config_path.parent / path).resolve()
         return path
-    
+
     database_path = resolve_path(data["database_path"])
     music_dir =     resolve_path(data["music_dir"])
     temp_dir =      resolve_path(data["temp_dir"])
-    
+
     # TODO: make sure they're created in the init.py run as well as pick locations
     _config = Config(
         server_name =           data.get("server_name", "qwave"),
@@ -90,7 +92,7 @@ def load_config(config_path: Path = find_config_file()) -> Config:
         logo_url =              data.get("logo_url"),
         background_url =        data.get("background_url"),
     )
-    
+
     return _config
 
 def get_config() -> Config:

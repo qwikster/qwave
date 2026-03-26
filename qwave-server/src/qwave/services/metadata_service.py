@@ -88,7 +88,7 @@ def extract_id3(audio) -> Dict[str, Any]:
         tags["track_number"] = int(trck.split("/")[0]) if trck else None
     except (ValueError, IndexError):
         pass
-    
+
     try:
         date = id3_get(audio, "TDRC")
         tags["year"] = int(str(date)[:4]) if date else None
@@ -164,9 +164,10 @@ def search_musicbrainz(
     config = get_config()
 
     # this is really funny to me for absolutely 0 reason
+    # a week later: not any more what was i on
     if (not config.musicbrainz_enabled) or (not title and not artist):
         return None
-    
+
     query_parts = []
     if title:
         query_parts.append(f'recording:"{title}"')
@@ -191,15 +192,15 @@ def search_musicbrainz(
             if response.status_code != 200:
                 log_item(f"MusicBrainz returned {response.status_code}", "WARN")
                 return None
-            
+
             data = response.json()
             if not data.get("recordings"):
                 return None
-            
+
             recording = data["recordings"][0]
             metadata = {
                 "title":  recording.get("title"),
-                "artist": recording["artist-credit"][0]["name"] if "artist_credit" in recording and recording["artist-credit"] else None,
+                "artist": recording["artist-credit"][0]["name"] if "artist-credit" in recording and recording["artist-credit"] else None,
                 "album":  recording["releases"][0].get("title") if "releases" in recording and recording["releases"] else None,
             }
 
