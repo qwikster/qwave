@@ -1,11 +1,14 @@
+from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status, Header
 from pydantic import BaseModel, Field
+from sqlalchemy.orm import Session
 
 from qwave.models import User
-from qwave.depends import DBDep
+from qwave.database import get_db
 from qwave.services import auth_service
 from qwave.utils.log_item import log_item
 
+DBDep = Annotated[Session, Depends(get_db)]
 router = APIRouter()
 # endpoints: /register /login /logout /me
 
@@ -48,7 +51,6 @@ def get_current_user(db: DBDep, token: str = Depends(get_current_token)) -> User
             detail = "Invalid or expired token"
         )
     return user
-
 
 @router.post("/register", response_model = UserResponse, status_code = status.HTTP_201_CREATED)
 def register(request: RegisterRequest, db: DBDep):

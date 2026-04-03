@@ -3,15 +3,15 @@ import tempfile
 from typing import List, Optional
 from pathlib import Path
 from fastapi import APIRouter, HTTPException, status, UploadFile, File
-from pydantic import BaseModel,
+from pydantic import BaseModel, Field
 from datetime import datetime
 from sqlalchemy.orm import Session
 
-from qwave.models import User, Track, Artist, Album, Genre, Job, track_artists, track_genres
+from qwave.models import Track, Artist, Genre, Job, track_artists, track_genres
 from qwave.config import get_config
 from qwave.depends import DBDep, UserDep
 from qwave.services import import_service
-from qwave.utils.log_item import log_item
+# from qwave.utils.log_item import log_item
 from qwave.workers.worker import queue_job
 
 router = APIRouter()
