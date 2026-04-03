@@ -3,12 +3,16 @@ import tempfile
 from typing import List, Optional
 from pathlib import Path
 from fastapi import APIRouter, HTTPException, status, UploadFile, File
-from pydantic import BaseModel, Field
+from pydantic import BaseModel,
+from datetime import datetime
 from sqlalchemy.orm import Session
 
 from qwave.models import User, Track, Artist, Album, Genre, Job, track_artists, track_genres
 from qwave.config import get_config
 from qwave.depends import DBDep, UserDep
+from qwave.services import import_service
+from qwave.utils.log_item import log_item
+from qwave.workers.worker import queue_job
 
 router = APIRouter()
 
@@ -95,6 +99,7 @@ class GenreRequest(BaseModel):
 class MessageResponse(BaseModel):
     message:        str
 
+
 @router.get("", response_model = TrackListResponse)
 def list_tracks(
     user:      UserDep,
@@ -108,20 +113,146 @@ def list_tracks(
     limit:     int           = 128,
     offset:    int           = 0,
 ):
-    pass
+    query = db.query(Track)
+
+    if artist_id:
+        query = query.join(track_artists).filter(track_artists.c.artist_id == artist_id)
+    if album_id:
+        query = query.filter(Track.album_id == album_id)
+    if genre_id:
+        query = query.join(track_genres).filter(track_genres.c.genre_id == genre_id)
+    if added_by:
+        query = query.filter(Track.added_by_user_id == added_by)
+    if date_from:
+        query = query.filter(Track.added_date >= datetime.fromisoformat(date_from))
+    if date_to:
+        query = query.filter(Track.added_date <= datetime.fromisoformat(date_to))
+
+    query = query.order_by()
+    total = query.count()
+    tracks = query.limit(limit).offset(offset).all()
+
+    return TrackListResponse(
+        tracks = [
+            TrackSummary(
+                id = t.id,
+                title = t.title,
+                duration = int(t.duration),
+                artists = [
+                    ArtistInfo(
+                        id = a.id,
+                        name = a.name,
+                        is_primary = is_primary_artist(db, t.id, a.id)
+                    ) for a in t.artists
+                ],
+                album = AlbumInfo(
+                    id = t.album.id,
+                    title = t.album.title,
+                    release_date = t.album.release_date.isoformat() if t.album.release_date else None
+                ) if t.album else None,
+                added_date = t.added_date.isoformat()
+            ) for t in tracks
+        ], total = total
+    )
+
 
 @router.get("/{track_id}", response_model = TrackDetail)
 def get_track(user: UserDep, db: DBDep, track_id: int):
-    pass
+    track = db.query(Track).filter(Track.id == track_id).first()
+    if not track:
+        raise HTTPException(status_code = status.HTTP_404_NOT_FOUND, detail = "Track not found!")
 
-# TODO: allow adding data to track on upload instead of after
+    return TrackDetail(
+        id = track.id,
+        title = track.title,
+        duration = int(track.duration),
+        track_number = track.track_number,
+        artists = [
+            ArtistInfo(
+                id = a.id, name = a.name, is_primary = is_primary_artist(db, track.id, a.id)
+            ) for a in track.artists
+        ],
+        album = AlbumInfo(
+            id = track.album.id,
+            title = track.album.title,
+            release_date = track.album.release_date.isoformat() if track.album.release_date else None
+        ) if track.album else None,
+        genres = [GenreInfo(id = g.id, name = g.name) for g in track.genres],
+        lyrics = track.lyrics,
+        added_date = track.added_date.isoformat(),
+        added_by = UserInfo(id = track.added_by.id, username = track.added_by.username)
+    )
+
+# TODO: MAYBE: allow adding data to track on upload instead of after
 @router.post("/upload", response_model = UploadResponse)
 async def upload_track(user: UserDep, db: DBDep, file: UploadFile = File(...)):
-    pass
+    config = get_config()
+    max_size = config.max_upload_size_mb * (1024 ** 2)
 
+    if not file.filename:
+        raise Exception("WHAT DID YOU DO") # just here to get pyright to shut up
+
+    with tempfile.NamedTemporaryFile(delete = False, suffix = Path(file.filename).suffix) as tmp:
+        content = await file.read()
+        if len(content) > max_size:
+            Path(tmp.name).unlink()
+            raise HTTPException(status_code = status.HTTP_413_CONTENT_TOO_LARGE, detail = "file too large!")
+        tmp.write(content)
+        tmp_path = Path(tmp.name)
+
+    try:
+        result = import_service.handle_upload(db = db, file_path = tmp_path, filename = file.filename, user_id = user.id)
+        job = db.query(Job).filter(Job.id == result["job_id"]).first()
+        if job:
+            queue_job(job)
+
+        return UploadResponse(
+            job_id = result["job_id"],
+            track_id = result["track_id"],
+            status = result["status"]
+        )
+
+    except ValueError as e:
+        tmp_path.unlink()
+        raise HTTPException(status_code = status.HTTP_400_BAD_REQUEST, detail = str(e))
+
+    finally:
+        if tmp_path.exists():
+            tmp_path.unlink()
+
+# TODO: add the rest of the fields? gotta do it different
 @router.patch("/{track_id}", response_model = UpdateTrackResponse)
 def update_track(user: UserDep, db: DBDep, track_id: int, request: UpdateTrackRequest): # can i just tack this onto upload_track()?
-    pass
+    track = db.query(Track).filter(Track.id == track_id).first()
+    if not track:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail = "Trakc not found!")
+    # too lazy to add the legacy permission check
+
+    updated_fields = []
+
+    if request.title is not None:
+        track.title = request.title
+        updated_fields.append("title")
+    if request.track_number is not None:
+        track.track_number = request.track_number
+        updated_fields.append("track_number")
+    if request.lyrics is not None:
+        track.lyrics = request.lyrics
+        updated_fields.append("lyrics")
+
+    db.commit()
+    db.refresh(track)
+
+    return UpdateTrackResponse(
+        id = track.id,
+        updated_fields = updated_fields,
+        track = {
+            "id": track.id,
+            "title": track.title,
+            "track_number": track.track_number,
+            "lyrics": track.lyrics
+        }
+    )
 
 # i will hack this club
 @router.delete("/{track_id}", response_model = DeleteTrackResponse)
@@ -142,6 +273,7 @@ def delete_track(user: UserDep, db: DBDep, track_id: int):
     db.commit()
     return DeleteTrackResponse(message = f"Deleted track {track_id}", id = track_id)
 
+
 @router.get("/{track_id}/artists", response_model = ArtistListResponse)
 def get_track_artists(user: UserDep, db: DBDep, track_id: int):
     track = db.query(Track).filter(Track.id == track_id).first()
@@ -153,9 +285,41 @@ def get_track_artists(user: UserDep, db: DBDep, track_id: int):
         ) for a in track.artists ]
     )
 
+
 @router.post("/{track_id}/artists", response_model = AddArtistResponse)
 def add_track_artist(user: UserDep, db: DBDep, track_id: int, request: AddArtistRequest):
-    pass
+    track = db.query(Track).filter(Track.id == track_id).first()
+    artist = db.query(Artist).filter(Artist.id == request.artist_id).first()
+
+    if not track:
+        raise HTTPException(status_code = status.HTTP_404_NOT_FOUND, detail = "Track not found...")
+    if not artist:
+        raise HTTPException(status_code = status.HTTP_404_NOT_FOUND, detail = "Artist not found...")
+    # if track.added_by_user_id != user.id:
+        # raise HTTPException(status_code = status.HTTP_403_FORBIDDEN, detail = "You don't own this...")
+
+    existing = db.execute( track_artists.select().where(
+        track_artists.c.track_id == track_id,
+        track_artists.c.artist_id == request.artist_id
+    )).first()
+
+    if existing:
+        raise HTTPException(status_code = status.HTTP_400_BAD_REQUEST, detail = "Artist already selected!")
+
+    db.execute(
+    track_artists.insert().values(
+        track_id = track_id,
+        artist_id = request.artist_id,
+        is_primary = request.is_primary
+    ))
+    db.commit()
+
+    return AddArtistResponse(
+        message = "Artist added :)",
+        track_id = track_id,
+        artist = ArtistInfo(id = artist.id, name = artist.name, is_primary = request.is_primary)
+    )
+
 
 @router.delete("/{track_id}/artists/{artist_id}", response_model = MessageResponse)
 def remove_track_artist(user: UserDep, db: DBDep, track_id: int, artist_id: int):
@@ -174,9 +338,25 @@ def remove_track_artist(user: UserDep, db: DBDep, track_id: int, artist_id: int)
 
     return MessageResponse(message = f"Removed artist {artist_id} from track {track_id}")
 
+
 @router.post("/{track_id}/genres", response_model = MessageResponse)
 def add_track_genre(user: UserDep, db: DBDep, track_id: int, request: GenreRequest):
-    pass
+    track = db.query(Track).filter(Track.id == track_id).first()
+    genre = db.query(Genre).filter(Genre.id == request.genre_id).first()
+
+    if not track:
+        raise HTTPException(status_code = status.HTTP_404_NOT_FOUND, detail = "Track not found!")
+    if not genre:
+        raise HTTPException(status_code = status.HTTP_404_NOT_FOUND, detail = "Genre not found!")
+    # auth here?
+
+    db.execute(
+        track_genres.insert().values(
+            track_id = track_id,
+            genre_id = request.genre_id
+        )
+    )
+    return MessageResponse(message = "Genre added!")
 
 @router.delete("/{track_id}/genres/{genre_id}", response_model = MessageResponse)
 def remove_track_genre(user: UserDep, db: DBDep, track_id: int, genre_id: int):
@@ -194,6 +374,7 @@ def remove_track_genre(user: UserDep, db: DBDep, track_id: int, genre_id: int):
     ))
     db.commit()
     return MessageResponse(message = f"Removed genre {genre_id} from {track_id}")
+
 
 def is_primary_artist(db: Session, track_id: int, artist_id: int) -> bool:
     result = db.execute(
