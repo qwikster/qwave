@@ -17,7 +17,7 @@ from qwave.database import init_db
 from qwave.utils.log_item import log_item, clear_log
 from qwave.workers.worker import start_worker, stop_worker
 
-from qwave.api import auth, server, artists, genres, albums
+from qwave.api import auth, server, artists, genres, albums, tracks
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -29,7 +29,7 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         log_item(f"{e} - Try running qwave_init?", "ERROR")
         sys.exit(1)
-    
+
     log_item("Connecting to database...", "INFO")
     try:
         init_db()
@@ -44,14 +44,14 @@ async def lifespan(app: FastAPI):
         f"API docs: http://{config.host}:{config.port}/docs",
         f"Output directory: {config.music_dir}"
     ], cls = False)
-    
+
     yield
-    
+
     log_item("Shutting down...", "WARN")
     stop_worker()
     log_item("goodbye!", "SUCCESS")
-        
-        
+
+
 def create_app() -> FastAPI:
     app = FastAPI(
         title =       "qWave",
@@ -60,9 +60,9 @@ def create_app() -> FastAPI:
         lifespan =    lifespan,
         docs_url = None
     )
-    
+
     app.mount("/static", StaticFiles(directory=Path(__file__).resolve().parent / "static"), name = "static")
-    
+
     app.add_middleware(
         CORSMiddleware,
         # FIXME: THIS IS NOT SECURE FOR PUBLIC EXPOSURE
@@ -71,7 +71,7 @@ def create_app() -> FastAPI:
         allow_methods = ["*"],
         allow_headers = ["*"],
     )
-    
+
     @app.get("/", tags = ["root"], include_in_schema = False)
     def read_root(): # TODO: This is where the webapp client links in
         config = get_config()
@@ -80,18 +80,18 @@ def create_app() -> FastAPI:
             "server_name": config.server_name,
             "version": version("qwave"),
         }
-        
+
     @app.get("/health", tags = ["root"])
     def health_check():
         return {"status": "healthy"} # TODO: lmao what if it's not
-        
+
     @app.get("/docs")
     def get_docs() -> HTMLResponse:
         return get_swagger_ui_html(
             openapi_url = app.openapi_url if app.openapi_url is not None else "/openapi.json",
             title = "qWave API",
             swagger_favicon_url = "/static/favicon.png")
-    
+
     # TODO: ADD ALL THE ROUTERS HERE
     # app.include_router(bnuuy.router, prefix = "/bnuuy", tags = ["bnuuy"])
     app.include_router(auth.router,    prefix = "/auth",    tags = ["auth"])
@@ -99,6 +99,7 @@ def create_app() -> FastAPI:
     app.include_router(artists.router, prefix = "/artists", tags = ["artists"])
     app.include_router(genres.router,  prefix = "/genres",  tags = ["genres"])
     app.include_router(albums.router,  prefix = "/albums",  tags = ["albums"])
+    app.include_router(tracks.router,  prefix = "/tracks",  tags = ["tracks"])
     return app
 
 
@@ -106,7 +107,7 @@ def entry():
     load_config()
     app = create_app()
     config = get_config()
-    
+
     uvicorn.run(
         app,
         host = config.host,

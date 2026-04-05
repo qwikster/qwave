@@ -11,14 +11,16 @@ symbols = {
 }
 
 def clear_log(file: Path = find_config_file().parent / 'qwave.log'):
+    if not file.exists():
+        return 0
     file.rename('qwave_old.log')
     with open(file, 'w') as f:
-        f.write(f"[{datetime.now().strftime("%x %X")}] Log cleared\n")
+        f.write(f"[{datetime.now().strftime('%x %X')}] Log cleared\n")
         f.write("===============================\n")
 
 def get_log_path(config_path: Path = find_config_file()) -> Path:
     return config_path.parent
-    
+
 def log_item(content: str, type: str, timestamp: str = datetime.now().strftime("%x %X"), log_path: Path = get_log_path()):
     sym = symbols.get(type.upper(), "what did you do")
     message = f"[{timestamp}] [{sym}] {type.upper()}: {content}\n"

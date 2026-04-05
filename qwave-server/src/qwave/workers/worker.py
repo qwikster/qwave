@@ -1,4 +1,5 @@
 import queue
+import time
 from datetime import datetime
 import threading
 from typing import Optional
@@ -19,16 +20,18 @@ def process_job(job: Job):
         if db_job:
             db_job.status = "running"
             db_job.started_at = datetime.now()
-        
+        session.commit()
+
     # TODO: actually do the job lmao
-    ...
+    time.sleep(1)
 
     with session_scope() as session:
         db_job = session.query(Job).filter(Job.id == job.id).first()
         if db_job:
             db_job.status = "complete"
             db_job.completed_at = datetime.now()
-    
+        session.commit()
+
     log_item(f"Completed {job.id}", "JOB")
 
 def worker_loop():
@@ -49,15 +52,17 @@ def worker_loop():
                         db_job.status = "failed"
                         db_job.error_message = str(e)
                         db_job.started_at = datetime.now()
+                    session.commit()
 
             _job_queue.task_done()
-        
+
         except queue.Empty:
             with session_scope() as session:
                 pending_jobs = session.query(Job).filter(Job.status == "pending").all()
                 for job in pending_jobs:
                     _job_queue.put(job)
-    
+                session.commit()
+
     log_item("Worker thread stopped!", "WARN")
 
 def start_worker():

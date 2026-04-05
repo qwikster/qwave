@@ -22,7 +22,7 @@ ALLOWED_MIME_TYPES = {
 def validate_audio_file(file_path: Path) -> Tuple[bool, Optional[str]]:
     if file_path.suffix.lower() not in ALLOWED_EXTENSIONS:
         return False, f"File type {file_path.suffix} not allowed."
-    
+
     try:
         mime = magic.from_file(str(file_path), mime = True)
         if mime not in ALLOWED_MIME_TYPES:
@@ -51,7 +51,7 @@ def build_track_path(
 ) -> Path:
     config = get_config()
     base_dir = config.music_dir
-    
+
     s_artist = sanitize(artist_name)
     s_track  = sanitize(track_title)
 
@@ -61,7 +61,7 @@ def build_track_path(
             album_dir = f"{s_album} ({album_year})"
         else:
             album_dir = s_album
-        
+
         if track_number:
             filename = f"{track_number:02d} - {s_track}.opus"
         else:
@@ -81,7 +81,7 @@ def build_track_path(
                 filename = f"{s_track} ({counter}).opus"
             path = path.parent / filename
             counter += 1
-    
+
     path.parent.mkdir(parents = True, exist_ok = True)
 
     return path

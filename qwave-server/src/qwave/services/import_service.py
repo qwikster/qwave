@@ -1,4 +1,4 @@
-import uuid
+
 import shutil
 
 from typing import Dict, Any, Optional
@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 from qwave.config import get_config
 from qwave.models import Track, Artist, Album, Job, Genre, track_artists, track_genres
 from qwave.utils.log_item import log_item
-from qwave.services.file_service import validate_audio_file
+from qwave.services.file_service import sanitize, validate_audio_file
 from qwave.services.metadata_service import extract, search_musicbrainz
 
 def handle_upload(
@@ -25,10 +25,10 @@ def handle_upload(
     if not is_valid:
         raise ValueError(error)
 
-    temp_file = config.temp_dir / f"{uuid.uuid4()}{file_path.suffix}"
+    temp_file = config.temp_dir / f"{sanitize(filename)}{file_path.suffix}"
     shutil.copy(file_path, temp_file)
 
-    log_item(f"Processing metadata for {filename}", "INFO")
+    log_item(f"Processing metadata for {sanitize(filename)}", "INFO")
     metadata = extract(temp_file)
 
     needs_analysis = not metadata.get('title') or not metadata.get('artist')
@@ -41,7 +41,10 @@ def handle_upload(
                     metadata[key] = value
 
     needs_review = not metadata.get("title") or not metadata.get("artist")
-    artist = find_artist(db, metadata.get("artist", "Unknown Artist"))
+    artist_name = metadata.get("artist", "")
+    if not artist_name:
+        artist_name = "Unknown Artist"
+    artist = find_artist(db, artist_name)
     album = None
 
     if metadata.get("album"):
@@ -56,7 +59,7 @@ def handle_upload(
         title =            metadata.get("title", filename),
         duration =         metadata.get("duration", 0),
         file_path =        str(temp_file),
-        opus_path =        str(temp_file),
+        opus_path =        None,
         track_number =     metadata.get("track_number"),
         album_id =         album.id if album else None,
         added_by_user_id = user_id,
@@ -100,7 +103,7 @@ def handle_upload(
 def find_artist(db: Session, name: str) -> Artist:
     artist = db.query(Artist).filter(Artist.name == name).first()
     if not artist:
-        artist = Artist(name = name)
+        artist = Artist(name = name, id = -1)
         db.add(artist)
         db.flush()
     return artist
@@ -119,7 +122,7 @@ def find_album(
     if year:
         release_date = datetime(year, 1, 1)
         query = query.filter(Album.release_date == release_date)
-    
+
     album = query.first()
     if not album:
         album = Album(

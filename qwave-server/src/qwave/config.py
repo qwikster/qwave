@@ -74,6 +74,9 @@ def load_config(config_path: Optional[Path] = None) -> Config:
     music_dir =     resolve_path(data["music_dir"])
     temp_dir =      resolve_path(data["temp_dir"])
 
+    music_dir.mkdir(parents = True, exist_ok = True)
+    temp_dir.mkdir(parents = True, exist_ok = True)
+
     # TODO: make sure they're created in the init.py run as well as pick locations
     _config = Config(
         server_name =           data.get("server_name", "qwave"),
