@@ -103,7 +103,7 @@ def handle_upload(
 def find_artist(db: Session, name: str) -> Artist:
     artist = db.query(Artist).filter(Artist.name == name).first()
     if not artist:
-        artist = Artist(name = name, id = -1)
+        artist = Artist(name = name)
         db.add(artist)
         db.flush()
     return artist
