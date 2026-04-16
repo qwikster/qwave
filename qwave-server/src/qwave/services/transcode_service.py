@@ -64,13 +64,23 @@ def transcode_verify(
     output_path: Path,
     tolerance: float = 1.0
 ) -> Tuple[bool, Optional[str]]:
-    original = mutagen.File(input_path)
-    output = mutagen.File(output_path)
+    try:
+        input = mutagen.File(input_path)
+        output = mutagen.File(output_path)
 
-    if not original or not output:
-        return False, "One or both files are unreadable"
+        if not input or not output:
+            return False, "Failed to verify: One or both files are unreadable"
 
-    return True, None
+        diff = abs(input.info.length - output.info.length)
+
+        if diff > tolerance:
+            return False, f"Failed to verify: {diff:.2f}s difference"
+
+        log_item("Transcode fine", "SUCCESS")
+        return True, None
+
+    except Exception as e:
+        return False, f"Verification error: {str(e)}"
 
 def get_audio_duration(file_path) -> Optional[float]:
     try:

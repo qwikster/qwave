@@ -1,12 +1,16 @@
-import queue
 import time
-from datetime import datetime
+import queue
 import threading
-from typing import Optional
 
+from typing import Optional
+from pathlib import Path
+from datetime import datetime
+
+from qwave.models import Job, Track
 from qwave.database import session_scope
-from qwave.models import Job
 from qwave.utils.log_item import log_item
+from qwave.services.file_service import build_track_path
+from qwave.services.transcode_service import transcode, transcode_verify
 
 _worker_thread: Optional[threading.Thread] = None
 _job_queue: queue.Queue = queue.Queue()
@@ -17,22 +21,66 @@ def process_job(job: Job):
 
     with session_scope() as session:
         db_job = session.query(Job).filter(Job.id == job.id).first()
-        if db_job:
-            db_job.status = "running"
-            db_job.started_at = datetime.now()
+        if not db_job:
+            log_item(f"Job {job.id} not found in db", "ERROR")
+            return
+        db_job.status = "running"
+        db_job.started_at = datetime.now()
         session.commit()
 
-    # TODO: actually do the job lmao
-    time.sleep(1)
+        track = session.query(Track).filter(Track.id == job.track_id).first()
+        if not track:
+            fail_job(job, "Track {job.track_id} not found")
+            return
 
-    with session_scope() as session:
-        db_job = session.query(Job).filter(Job.id == job.id).first()
-        if db_job:
-            db_job.status = "complete"
-            db_job.completed_at = datetime.now()
+        temp_file = Path(track.file_path)
+
+        if not temp_file.exists():
+            fail_job(job, "File not found at {temp_file}")
+            return
+
+        output_path = build_track_path(
+            artist_name = track.artists[0].name if track.artists else "Unknown Artist",
+            track_title = track.title,
+            album_title = track.album.title if track.album else None,
+            album_year  = track.album.release_date.year if track.album and track.album.release_date else None,
+            track_number = track.track_number if track.track_number else None
+        )
+
+        log_item(f"Transcoding to {output_path}", "INFO")
+
+        success, error = transcode(temp_file, output_path)
+
+        if not success:
+            fail_job(job, f"Transcode failed: {error}")
+            return
+
+        success, error = transcode_verify(temp_file, output_path)
+
+        if not success:
+            fail_job(job, f"Transcode couldn't be verified: {error}")
+            if output_path.exists():
+                output_path.unlink()
+            return
+
+        track.opus_path = str(output_path)
+
+        try:
+            temp_file.unlink()
+        except Exception as e:
+            log_item(f"Could not delete temp file: {e}", "ERROR")
+
+        db_job.status = "complete"
+        db_job.completed_at = datetime.now()
         session.commit()
 
-    log_item(f"Completed {job.id}", "JOB")
+        log_item(f"Completed {job.id}", "JOB")
+
+# def process_job():
+#     if job.type == "transcode":
+#         transcode_job(job)
+#     else:
+#         log_item(f"Invalid job type: {job.type}", ERROR)
 
 def worker_loop():
     log_item("Worker thread started", "SUCCESS")
@@ -52,7 +100,7 @@ def worker_loop():
                         db_job.status = "failed"
                         db_job.error_message = str(e)
                         db_job.started_at = datetime.now()
-                    session.commit()
+                        session.commit()
 
             _job_queue.task_done()
 
@@ -96,3 +144,13 @@ def stop_worker():
 
 def queue_job(job: Job):
     _job_queue.put(job)
+
+def fail_job(job: Job, message: str)
+    with session_scope() as session:
+        db_job = session.query(Job).filter(Job.id == job.id).first()
+        if db_job:
+            db_job.status = "failed"
+            db_job.error_message = message
+            db_job.completed_at = datetime.now()
+            session.commit()
+            log_item(message, "ERROR")
