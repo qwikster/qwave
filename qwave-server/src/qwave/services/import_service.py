@@ -25,7 +25,7 @@ def handle_upload(
     if not is_valid:
         raise ValueError(error)
 
-    temp_file = config.temp_dir / f"{sanitize(filename)}{file_path.suffix}"
+    temp_file = config.temp_dir / f"{sanitize(filename)}"
     shutil.copy(file_path, temp_file)
 
     log_item(f"Processing metadata for {sanitize(filename)}", "INFO")

@@ -145,7 +145,7 @@ def stop_worker():
 def queue_job(job: Job):
     _job_queue.put(job)
 
-def fail_job(job: Job, message: str)
+def fail_job(job: Job, message: str):
     with session_scope() as session:
         db_job = session.query(Job).filter(Job.id == job.id).first()
         if db_job:

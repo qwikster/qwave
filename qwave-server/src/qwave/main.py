@@ -17,7 +17,7 @@ from qwave.database import init_db
 from qwave.utils.log_item import log_item, clear_log
 from qwave.workers.worker import start_worker, stop_worker
 
-from qwave.api import auth, server, artists, genres, albums, tracks
+from qwave.api import auth, server, artists, genres, albums, tracks, stream
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -100,6 +100,7 @@ def create_app() -> FastAPI:
     app.include_router(genres.router,  prefix = "/genres",  tags = ["genres"])
     app.include_router(albums.router,  prefix = "/albums",  tags = ["albums"])
     app.include_router(tracks.router,  prefix = "/tracks",  tags = ["tracks"])
+    app.include_router(stream.router,  prefix = "/stream",  tags = ["stream"])
     return app
 
 

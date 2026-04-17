@@ -22,7 +22,7 @@ def transcode(
         "-i", str(input_path),      # input
         "-c:a", "libopus",          # use OPUS
         "-b:a", f"{bitrate}k",      # bitrate
-        "vbr", "on",                # variable bitrate (lq source)
+        "-vbr", "on",                # variable bitrate (lq source)
         "-compression_level", "10", # TODO: decrease if slow (min file size)
         "-y",                       # overwrite
         str(output_path)            # output
