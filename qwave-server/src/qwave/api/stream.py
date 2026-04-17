@@ -1,5 +1,6 @@
 import os
 
+from typing import Generator
 from pathlib import Path
 from fastapi import APIRouter, HTTPException, status, Request
 from sqlalchemy.orm import Session
@@ -11,8 +12,17 @@ from qwave.utils.log_item import log_item
 
 router = APIRouter()
 
+def stream_range(
+    file_path: Path,
+    start: int, end: int,
+    chunk_size: int = 8192
+) -> Generator[bytes, None, None]:
+    yield "balls"
+
+
 @router.get("/{track_id}")
-async def stream_track(track_id: int, request: Request, user: UserDep, db: DBDep):
+# HACK: remove UserDep for html testing, or curl | mpv -
+async def stream_track(track_id: int, request: Request, db: DBDep, user: UserDep):
     track = db.query(Track).filter(Track.id == track_id).first()
     if not track:
         raise HTTPException(
@@ -54,4 +64,34 @@ async def stream_track(track_id: int, request: Request, user: UserDep, db: DBDep
             }
         )
 
-    # try:
+    try:
+        range_str = range_header.replace("bytes=", "").strip()
+        range_parts = range_str.split("-")
+
+        start = int(range_parts[0]) if range_parts[0] else 0
+        end = int(range_parts[1]) if len(range_parts) > 1 and range_parts[1] else file_size - 1
+
+        if start >= file_size or end >= file_size or start > end:
+            raise HTTPException(
+                status_code = status.HTTP_416_RANGE_NOT_SATISFIABLE,
+                headers = {"Content-Range": f"bytes */{file_size}"}
+            )
+
+        content_length = end - start + 1
+        log_item(f"Streaming {track_id} ({track.title}) at range {start}-{end}/{file_size}", "INFO")
+
+        return StreamingResponse(
+            stream_range(file_path, start, end),
+            status_code = 206,
+            headers = {
+                "Content-Range": f"bytes {start}-{end}/{file_size}",
+                "Accept-Ranges": "bytes",
+                "Content-Length": str(content_length)
+            }
+        )
+
+    except ValueError:
+        raise HTTPException(
+            status_code = status.HTTP_400_BAD_REQUEST,
+            detail = "Invalid Range header."
+        )

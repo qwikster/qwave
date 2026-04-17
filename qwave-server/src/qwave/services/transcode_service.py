@@ -1,4 +1,4 @@
-import mutagen
+from mutagen._file import File as MutagenFile
 import subprocess
 
 from typing import Optional, Tuple
@@ -65,8 +65,8 @@ def transcode_verify(
     tolerance: float = 1.0
 ) -> Tuple[bool, Optional[str]]:
     try:
-        input = mutagen.File(input_path)
-        output = mutagen.File(output_path)
+        input = MutagenFile(input_path)
+        output = MutagenFile(output_path)
 
         if not input or not output:
             return False, "Failed to verify: One or both files are unreadable"
