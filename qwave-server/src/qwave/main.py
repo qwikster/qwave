@@ -17,7 +17,7 @@ from qwave.database import init_db
 from qwave.utils.log_item import log_item, clear_log
 from qwave.workers.worker import start_worker, stop_worker
 
-from qwave.api import auth, server, artists, genres, albums, tracks, stream
+from qwave.api import auth, server, artists, genres, albums, tracks, stream, search
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -93,7 +93,7 @@ def create_app() -> FastAPI:
             swagger_favicon_url = "/static/favicon.png")
 
     # TODO: ADD ALL THE ROUTERS HERE
-    # app.include_router(bnuuy.router, prefix = "/bnuuy", tags = ["bnuuy"])
+    # app.include_router(bnuuy.router, prefix = "/bnuuy", tags = ["bnuuy", "ing"])
     app.include_router(auth.router,    prefix = "/auth",    tags = ["auth"])
     app.include_router(server.router,  prefix = "/server",  tags = ["server"])
     app.include_router(artists.router, prefix = "/artists", tags = ["artists"])
@@ -101,6 +101,7 @@ def create_app() -> FastAPI:
     app.include_router(albums.router,  prefix = "/albums",  tags = ["albums"])
     app.include_router(tracks.router,  prefix = "/tracks",  tags = ["tracks"])
     app.include_router(stream.router,  prefix = "/stream",  tags = ["stream"])
+    app.include_router(search.router,  prefix = "/search",  tags = ["search"])
     return app
 
 
