@@ -1,12 +1,9 @@
-import os
-
 from typing import Generator
 from pathlib import Path
 from fastapi import APIRouter, HTTPException, status, Request
-from sqlalchemy.orm import Session
 from fastapi.responses import StreamingResponse, FileResponse
 
-from qwave.models import Track, User, Job
+from qwave.models import Track, Job
 from qwave.depends import DBDep, UserDep
 from qwave.utils.log_item import log_item
 
@@ -17,8 +14,17 @@ def stream_range(
     start: int, end: int,
     chunk_size: int = 8192
 ) -> Generator[bytes, None, None]:
-    yield "balls"
+    with open(file_path, "rb") as f:
+        f.seek(start)
+        remaining = end - start + 1
 
+        while remaining:
+            chunk_size = min(chunk_size, remaining)
+            data = f.read(chunk_size)
+            if not data:
+                break
+            remaining -= len(data)
+            yield data
 
 @router.get("/{track_id}")
 # HACK: remove UserDep for html testing, or curl | mpv -
