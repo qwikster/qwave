@@ -78,7 +78,7 @@ def login(request: LoginRequest, db: DBDep):
         )
 
     session = auth_service.create_session(db, user.id)
-    log_item(f"User {user.id} / {user.username} logged in with token {session.token}", "INFO")
+    log_item(f"User {user.id} / {user.username} logged in", "INFO")
     return LoginResponse(
         token = session.token,
         user_id = user.id,

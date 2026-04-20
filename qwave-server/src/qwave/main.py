@@ -65,9 +65,9 @@ def create_app() -> FastAPI:
 
     app.add_middleware(
         CORSMiddleware,
-        # FIXME: THIS IS NOT SECURE FOR PUBLIC EXPOSURE
+        # FIX: not safe for public exposure if auth becomes more important
         allow_origins = ["*"],
-        allow_credentials = True,
+        allow_credentials = False,
         allow_methods = ["*"],
         allow_headers = ["*"],
     )

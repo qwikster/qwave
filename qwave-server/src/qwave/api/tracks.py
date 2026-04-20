@@ -356,6 +356,7 @@ def add_track_genre(user: UserDep, db: DBDep, track_id: int, request: GenreReque
             genre_id = request.genre_id
         )
     )
+    db.commit()
     return MessageResponse(message = "Genre added!")
 
 @router.delete("/{track_id}/genres/{genre_id}", response_model = MessageResponse)

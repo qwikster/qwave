@@ -29,13 +29,13 @@ def process_job(job: Job):
 
         track = session.query(Track).filter(Track.id == job.track_id).first()
         if not track:
-            fail_job(job, "Track {job.track_id} not found")
+            fail_job(job, f"Track {job.track_id} not found")
             return
 
         temp_file = Path(track.file_path)
 
         if not temp_file.exists():
-            fail_job(job, "File not found at {temp_file}")
+            fail_job(job, f"File not found at {temp_file}")
             return
 
         output_path = build_track_path(
@@ -91,15 +91,7 @@ def worker_loop():
             try:
                 process_job(job)
             except Exception as e:
-                log_item(f"Error processing job {job.id}: {e}", "ERROR")
-
-                with session_scope() as session:
-                    db_job = session.query(Job).filter(Job.id == job.id).first()
-                    if db_job:
-                        db_job.status = "failed"
-                        db_job.error_message = str(e)
-                        db_job.started_at = datetime.now()
-                        session.commit()
+                fail_job(job, f"Error processing job {job.id}: {e}")
 
             _job_queue.task_done()
 

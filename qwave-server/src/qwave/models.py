@@ -144,7 +144,7 @@ class Job(Base): # ooooooo spooopy
     completed_at:  Mapped[Optional[datetime]] = mapped_column(DateTime,   nullable = True)
     error_message: Mapped[Optional[str]]      = mapped_column(Text,       nullable = True)
     track_id:      Mapped[Optional[int]]      = mapped_column(Integer, ForeignKey("tracks.id", ondelete = "CASCADE"))
-    track: Mapped[Optional[int]]              = relationship("Track", back_populates = "jobs")
+    track:         Mapped[Optional["Track"]]  = relationship("Track", back_populates = "jobs")
 
     def __repr__(self):
         return f"<Job(id={self.id}, type='{self.type}', status='{self.status}')>"

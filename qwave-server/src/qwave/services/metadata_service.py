@@ -209,5 +209,7 @@ def search_musicbrainz(
             except (ValueError, IndexError):
                 pass
 
+            return metadata
+
     except Exception as e:
         log_item(f"MusicBrainz search error: {e}", "WARN")

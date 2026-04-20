@@ -81,8 +81,8 @@ def get_genre_tracks(user: UserDep, db: DBDep, genre_id: int, limit: int = 128, 
                 "id": t.id,
                 "title": t.title,
                 "duration": int(t.duration),
-                "artists": [] # TODO: populate when i finish artists.py
-            }                 # ...im gonna forget about this
+                "artists": [{"id": a.id, "name": a.name} for a in t.artists]
+            }
             for t in tracks
         ],
         "total": total

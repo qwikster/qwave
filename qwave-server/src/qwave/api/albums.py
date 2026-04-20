@@ -152,7 +152,7 @@ def update_album(user: UserDep, db: DBDep, album_id: int, request: UpdateAlbumRe
         album.title = request.title
         updated_fields.append("title")
 
-    elif request.release_date is not None:
+    if request.release_date is not None:
         try:
             album.release_date = datetime.fromisoformat(request.release_date)
             updated_fields.append("release_date")
@@ -162,7 +162,7 @@ def update_album(user: UserDep, db: DBDep, album_id: int, request: UpdateAlbumRe
                 detail = "Invalid date format!"
             )
 
-    else:
+    if not request.title and not request.release_date:
         raise HTTPException(
             status_code = status.HTTP_400_BAD_REQUEST,
             detail = "Nothing to modify!"

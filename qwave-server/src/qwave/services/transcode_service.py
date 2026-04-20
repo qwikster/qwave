@@ -84,7 +84,7 @@ def transcode_verify(
 
 def get_audio_duration(file_path) -> Optional[float]:
     try:
-        audio = mutagen.File(file_path)
+        audio = MutagenFile(file_path)
         if audio and hasattr(audio, 'info'):
             return audio.info.length
         return None

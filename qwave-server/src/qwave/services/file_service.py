@@ -13,7 +13,7 @@ ALLOWED_MIME_TYPES = {
     "audio/wav",
     "audio/x-wav",
     "audio/ogg",
-    "audio/opus"
+    "audio/opus",
     "audio/x-m4a",
     "audio/mp4",
 }
