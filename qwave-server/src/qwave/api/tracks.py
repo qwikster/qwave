@@ -5,7 +5,7 @@ from pathlib import Path
 from fastapi import APIRouter, HTTPException, status, UploadFile, File
 from pydantic import BaseModel, Field
 from datetime import datetime
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload, joinedload
 
 from qwave.models import Track, Artist, Genre, Job, track_artists, track_genres
 from qwave.config import get_config
@@ -128,9 +128,10 @@ def list_tracks(
     if date_to:
         query = query.filter(Track.added_date <= datetime.fromisoformat(date_to))
 
-    query = query.order_by()
     total = query.count()
     tracks = query.limit(limit).offset(offset).all()
+
+    primary_map = load_primary_map(db, [t.id for t in  tracks])
 
     return TrackListResponse(
         tracks = [
@@ -142,7 +143,7 @@ def list_tracks(
                     ArtistInfo(
                         id = a.id,
                         name = a.name,
-                        is_primary = is_primary_artist(db, t.id, a.id)
+                        is_primary = primary_map.get((t.id, a.id), False)
                     ) for a in t.artists
                 ],
                 album = AlbumInfo(
@@ -158,9 +159,17 @@ def list_tracks(
 
 @router.get("/{track_id}", response_model = TrackDetail)
 def get_track(user: UserDep, db: DBDep, track_id: int):
-    track = db.query(Track).filter(Track.id == track_id).first()
+    track = db.query(Track).options(
+        selectinload(Track.artists),
+        joinedload(Track.album),
+        selectinload(Track.genres),
+        joinedload(Track.added_by)
+    ).filter(Track.id == track_id).first()
+
     if not track:
         raise HTTPException(status_code = status.HTTP_404_NOT_FOUND, detail = "Track not found!")
+
+    primary_map = load_primary_map(db, [track_id])
 
     return TrackDetail(
         id = track.id,
@@ -169,7 +178,8 @@ def get_track(user: UserDep, db: DBDep, track_id: int):
         track_number = track.track_number,
         artists = [
             ArtistInfo(
-                id = a.id, name = a.name, is_primary = is_primary_artist(db, track.id, a.id)
+                id = a.id, name = a.name,
+                is_primary = primary_map.get((track.id, a.id), False)
             ) for a in track.artists
         ],
         album = AlbumInfo(
@@ -276,12 +286,17 @@ def delete_track(user: UserDep, db: DBDep, track_id: int):
 
 @router.get("/{track_id}/artists", response_model = ArtistListResponse)
 def get_track_artists(user: UserDep, db: DBDep, track_id: int):
-    track = db.query(Track).filter(Track.id == track_id).first()
+    track = db.query(Track).options(selectinload(Track.artists)).filter(Track.id == track_id).first()
+
     if not track:
         raise HTTPException(status_code = status.HTTP_404_NOT_FOUND, detail = "Track not found")
+
+    primary_map = load_primary_map(db, [track_id])
+
     return ArtistListResponse(
         artists = [ArtistInfo(
-            id = a.id, name = a.name, is_primary = is_primary_artist(db, track_id, a.id)
+            id = a.id, name = a.name,
+            is_primary = primary_map.get((track_id, a.id), False)
         ) for a in track.artists ]
     )
 
@@ -376,7 +391,7 @@ def remove_track_genre(user: UserDep, db: DBDep, track_id: int, genre_id: int):
     db.commit()
     return MessageResponse(message = f"Removed genre {genre_id} from {track_id}")
 
-
+# semideprecated (??)
 def is_primary_artist(db: Session, track_id: int, artist_id: int) -> bool:
     result = db.execute(
         track_artists.select().where(
@@ -386,3 +401,13 @@ def is_primary_artist(db: Session, track_id: int, artist_id: int) -> bool:
     ).first()
 
     return result.is_primary if result else False
+
+def load_primary_map(db: Session, track_ids: list[int]) -> dict[tuple[int, int], bool]:
+    if not track_ids:
+        return {}
+    rows = db.execute(
+        track_artists.select().where(
+            track_artists.c.track_id.in_(track_ids)
+        )
+    ).fetchall()
+    return {(r.track_id, r.artist_id): r.is_primary for r in rows}

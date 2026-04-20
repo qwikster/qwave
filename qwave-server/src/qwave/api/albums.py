@@ -1,11 +1,11 @@
 from typing import List, Optional
-from fastapi import APIRouter, HTTPException, status#, Depends
+from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, Field
 from datetime import datetime
 from sqlalchemy import func
-# from sqlalchemy.orm import Session
+from sqlalchemy.orm import selectinload, joinedload
 
-from qwave.models import Album, Artist, Track
+from qwave.models import Album, Artist, Track, track_artists
 from qwave.depends import DBDep, UserDep
 
 router = APIRouter()
@@ -84,19 +84,30 @@ def list_albums(
 
 @router.get("/{album_id}", response_model = dict)
 def get_album(user: UserDep, db: DBDep, album_id: int):
-    album = db.query(Album).filter(Album.id == album_id).first()
+    album = db.query(Album).options(joinedload(Album.album_artist)).filter(Album.id == album_id).first()
+
     if not album:
         raise HTTPException(
             status_code = status.HTTP_404_NOT_FOUND,
             detail = "Album not found!"
         )
 
-    tracks = db.query(Track).filter(
+    tracks = db.query(Track).options(
+        selectinload(Track.artists)
+    ).filter(
         Track.album_id == album_id
     ).order_by(
         Track.track_number.nullslast(),
         Track.title
     ).all()
+
+    track_ids = [t.id for t in tracks]
+    primary_map = {}
+    if track_ids:
+        rows = db.execute(
+            track_artists.select().where(track_artists.c.track_id.in_(track_ids))
+        ).fetchall()
+        primary_map = {(r.track_id, r.artist_id): r.is_primary for r in rows}
 
     return {
         "id": album.id,
@@ -116,9 +127,7 @@ def get_album(user: UserDep, db: DBDep, album_id: int):
                     {
                         "id": a.id,
                         "name": a.name,
-                        "is_primary": db.query(db.query(Track).join(Track.artists).filter(
-                            Track.id == t.id, Artist.id == a.id
-                        ).exists()).scalar()
+                        "is_primary": primary_map.get((t.id, a.id), False)
                     }
                     for a in t.artists
                 ]

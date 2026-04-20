@@ -138,30 +138,37 @@ def get_artist_albums(user: UserDep, db: DBDep, artist_id: int):
             detail = "Artist not found!"
         )
 
-    albums_as_artist = db.query(Album).filter(
+    # albums where this is the album artist
+    as_album_artist = db.query(
+        Album, func.count(Track.id).label("track_count")
+    ).outerjoin(
+        Track, Album.id == Track.album_id
+    ).filter(
         Album.album_artist_id == artist_id
-    ).all()
+    ).group_by(Album.id).all()
 
-    albums_with_tracks = db.query(Album).join(
+    # albums where this artist appears on a track
+    as_track_artist = db.query(
+        Album, func.count(func.distinct(Track.id)).label("track_count")
+    ).join(
         Track, Album.id == Track.album_id
     ).join(
         track_artists, Track.id == track_artists.c.track_id
-    ).filter(track_artists.c.artist_id == artist_id).distinct().all()
+    ).filter(
+        track_artists.c.artist_id == artist_id
+    ).group_by(Album.id).all()
 
     album_ids = set()
     albums = []
 
-    for album in albums_as_artist + albums_with_tracks:
+    for album, track_count in as_album_artist + as_track_artist:
         if album.id not in album_ids:
             album_ids.add(album.id)
-            track_count = db.query(func.count(Track.id)).filter(
-                Track.album_id == album.id
-            ).scalar() or 0
-
             albums.append(AlbumSummary(
                 id = album.id,
                 title = album.title,
                 release_date = album.release_date.isoformat() if album.release_date else None,
-                track_count = track_count
+                track_count = track_count or 0
             ))
+
     return AlbumsResponse(albums = albums)
