@@ -26,25 +26,34 @@
         box-sizing: border-box;
         display: flex;
         flex-direction: column;
-        background: var(--bg);
         color: var(--secondary);
         font-family: 'ProFont', monospace;
-        font-size: 24px;
+        font-size: var(--font-titles);
     }
 
     .main {
         display: grid;
-        grid-template-columns: 200px 1fr;
         flex-direction: column;
         flex: 1;
         overflow: hidden;
     }
 
     .top {
-        display: contents;
+        display: flex;
     }
 
     .bottom {
-        display: contents;
+        display: flex;
+    }
+
+    @media (max-width: 540px) {
+        .main {
+            display: flex;
+            flex-direction: column-reverse;
+        }
+
+        .top {
+            flex-direction: column;
+        }
     }
 </style>

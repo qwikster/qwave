@@ -6,7 +6,13 @@
     --dim: #2C7B61;
     --secondary: #FF499E;
     --accent: #FFC60A;
-    background: var(--bg);
+    --progress: #FF499E;
+    --font-titles: 4vmin;
+    --font-artist: 3vmin;
+    --font-info: 2vmin;
+    --border-tile: 0.7vmin;
+    --border-small: 0.5vmin;
+    --border-hr: 0.4vmin;
     color: var(--secondary);
     font-family: 'ProFont', monospace;
 }
@@ -23,4 +29,42 @@ body {
     src: url('/src/assets/ProFont.ttf') format('truetype');
     font-style: normal;
     font-weight: normal;
+}
+
+.stripes {
+  background: repeating-linear-gradient(
+    -45deg,
+    #121714,       /* First color starts at 0 */
+    #121714 20px,  /* First color ends at 10px */
+    #1B221E 20px,  /* Second color starts immediately */
+    #1B221E 40px   /* Second color ends at 20px */
+  );
+  animation: move-stripes 5s linear infinite;
+  background-size: 56.57px 56.57px;
+}
+
+@keyframes move-stripes {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 56.57px 0;
+  }
+}
+
+.container {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.container::-webkit-scrollbar {
+  display: none;
+}
+
+@media (max-width: 540px) {
+    body {
+        overflow: hidden;
+        padding: 5vmin;
+        align-items: start;
+    }
 }

@@ -4,11 +4,11 @@
     <div class="playing-info">
         <div class="playing-artist">NOW PLAYING: RICK ASTLEY</div>
         <div class="playing-title">Never Gonna Give You Up</div>
-        <div class="playing-bar" style="color: var(--accent);">-------seekbar-------</div>
+        <input class="playing-seek" type="range">
     </div>
     <div class="playing-controls">
         <div class="track">TRACK 2</div>
-        <div class="time">1:02/3:32</div>
+        <div class="time">01:02/03:32</div>
         <div class="controls">
             <button class="control" id="controls-prev">󰒮</button>
             <button class="control" id="controls-pause">󰏤</button>
@@ -19,34 +19,103 @@
 
 <style>
     .now-playing {
+        background: var(--bg);
         grid-column: 2;
         display: flex;
+        justify-content: space-between;
+        align-items: center;
         flex: 1;
-        border: 3px solid var(--primary);
+        border: var(--border-tile) solid var(--primary);
         margin: 0.2rem;
         gap: 1rem;
         padding: 0.5rem;
+        min-width: 40vw;
     }
 
     .playing-info {
         display: flex;
         flex-direction: column;
+        flex: 1 1 auto;
+        min-width: 0;
     }
 
     .playing-artist {
-        font-size: 16px;
+        font-size: var(--font-artist);
         color: var(--dim);
     }
 
+    .playing-seek {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 100%;
+        min-width: 0;
+        height: 1.2vmin;
+        background: var(--primary);
+        outline: none;
+        cursor: pointer;
+        margin-top: 5px;
+    }
+
+    .playing-seek::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 3vmin;
+        height: 3vmin;
+        border: 0.6vmin solid var(--dim);
+        border-radius: 50%;
+        background: var(--secondary);
+        cursor: pointer;
+    }
+
+    .playing-seek::-webkit-progress-value {
+        background: var(--secondary);
+    }
+
+    .playing-seek::-moz-range-thumb {
+        width: 2vmin;
+        height: 2vmin;
+        border-color: #4C6460;
+        border-radius: 50%;
+        border-width: 4px;
+        background: var(--secondary);
+    }
+
+    .playing-seek::-webkit-slider-runnable-track {
+        background: linear-gradient(
+            to right,
+            var(--primary) 0%,
+            var(--primary) var(--progress, 0%),
+            var(--dim) var(--progress, 0%),
+            var(--dim) 100%
+        );
+    }
+
+    .playing-seek::-moz-range-track {
+        background: var(--dim);
+        height: 1.2vmin;
+    }
+
+    .playing-seek::-moz-range-progress {
+        background: var(--primary);
+        height: 1.2vmin;
+    }
+
     .playing-controls {
-        border-left: 2px solid var(--dim);
+        flex: 0 0 auto;
+        border-left: var(--border-hr) solid var(--dim);
         padding-left: 0.5rem;
         text-align: center;
     }
 
     .track, .time {
-        font-size: 16px;
+        font-size: var(--font-info);
         color: var(--dim);
+    }
+
+    .playing-artist, .playing-title {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .controls {
@@ -59,8 +128,14 @@
         font-family: 'ProFont';
         color: var(--secondary);
         background-color: var(--bg);
-        border: 2px solid var(--secondary);
+        border-color: var(--secondary);
         border-radius: 5px;
         margin-top: 0.5rem;
+    }
+
+    @media (max-width: 540px) {
+        .now-playing {
+            grid-column: span 2;
+        }
     }
 </style>

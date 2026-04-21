@@ -28,8 +28,13 @@
         <hr>
     </nav>
     <div class="sidebar-bottom">
-        <button>Upload</button>
-        <button>Settings</button>
+        <div class="navitem">
+            <span class="navicon"></span><span class="navlink">SETTINGS</span>
+        </div>
+        <hr>
+        <div class="navitem">
+            <span class="navicon"></span><span class="navlink">UPLOAD</span>
+        </div>
     </div>
 </aside>
 
@@ -40,14 +45,18 @@
     }
 
     .sidebar {
+        min-width: 20vw;
+        min-height: 50vh;
+        background: var(--bg);
         grid-column: 1;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-        border: 3px solid var(--dim);
+        border: var(--border-tile) solid var(--dim);
         margin: 0.2rem;
         gap: 1rem;
         padding: 0.5rem;
+        font-size: var(--font-artist)
     }
 
     nav {

@@ -3,7 +3,7 @@
 </script>
 
 <header>
-    <img src="{logo}" alt="n" width="140px" class="logo">
+    <img src="{logo}" alt="n" class="logo">
     <input id="search" type="search" class="search" placeholder=" SEARCH..." />
     <span class="clock">10:10PM</span>
 </header>
@@ -19,15 +19,17 @@
 
     img {
         image-rendering: pixelated;
+        width: 20.6vmin;
+        height: 6vmin;
     }
 
     .search {
         flex-grow: 1;
-        border: 3px solid var(--dim);
+        border: var(--border-tile) solid var(--dim);
         background-color: var(--bg);
         color: var(--primary);
         font-family: 'ProFont';
-        font-size: 16px;
+        font-size: var(--font-artist);
         padding: 0.2rem;
         margin: 0rem 0.4rem;
     }
@@ -38,9 +40,10 @@
     }
 
     .clock {
-        border: 3px solid var(--dim);
+        background: var(--bg);
+        border: var(--border-tile) solid var(--dim);
         color: var(--dim);
         padding: 0.2rem;
-        font-size: 20px;
+        font-size: var(--font-artist);
     }
 </style>
