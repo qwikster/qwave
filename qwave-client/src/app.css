@@ -11,9 +11,16 @@
     font-family: 'ProFont', monospace;
 }
 
+body {
+    margin: 0;
+    display: grid;
+    place-items: center;
+    min-height: 100vh;
+}
+
 @font-face {
     font-family: 'ProFont';
     src: url('/src/assets/ProFont.ttf') format('truetype');
-    font-weight: normal;
     font-style: normal;
+    font-weight: normal;
 }
