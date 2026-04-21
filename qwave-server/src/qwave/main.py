@@ -63,6 +63,11 @@ def create_app() -> FastAPI:
 
     app.mount("/static", StaticFiles(directory=Path(__file__).resolve().parent / "static"), name = "static")
 
+    app.mount("/app", StaticFiles(
+        directory = Path(__file__).resolve().parent / "static" / "app",
+        html = True
+    ), name = "app")
+
     app.add_middleware(
         CORSMiddleware,
         # FIX: not safe for public exposure if auth becomes more important
