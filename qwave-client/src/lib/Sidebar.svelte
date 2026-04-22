@@ -1,40 +1,36 @@
-<script></script>
+<script>
+    import { activePanel } from "./stores/ui.js";
+</script>
 
 <aside class="sidebar">
     <nav>
-        <div class="navitem">
+        <button class:active={$activePanel === "songs"} class="navitem" on:click={() => $activePanel = "songs"}>
             <span class="navicon">󰎇</span><span class="navlink">SONGS</span>
-        </div>
-        <hr>
-        <div class="navitem">
+        </button>
+        <button class:active={$activePanel === "artists"} class="navitem" on:click={() => $activePanel = "artists"}>
             <span class="navicon"></span><span class="navlink">ARTISTS</span>
-        </div>
-        <hr>
-        <div class="navitem">
+        </button>
+        <button class:active={$activePanel === "albums"} class="navitem" on:click={() => $activePanel = "albums"}>
             <span class="navicon"></span><span class="navlink">ALBUMS</span>
-        </div>
-        <hr>
-        <div class="navitem">
+        </button>
+        <button class:active={$activePanel === "playlists"} class="navitem" on:click={() => $activePanel = "playlists"}>
             <span class="navicon">󰐑</span><span class="navlink">PLAYLISTS</span>
-        </div>
-        <hr>
-        <div class="navitem">
+        </button>
+        <button class:active={$activePanel === "recent"} class="navitem" on:click={() => $activePanel = "recent"}>
             <span class="navicon"></span><span class="navlink">RECENT</span>
-        </div>
-        <hr>
-        <div class="navitem">
+        </button>
+        <button class="navitem" on:click={() => null}>
             <span class="navicon"></span><span class="navlink">RANDOM</span>
-        </div>
-        <hr>
+        </button>
     </nav>
     <div class="sidebar-bottom">
-        <div class="navitem">
-            <span class="navicon"></span><span class="navlink">SETTINGS</span>
-        </div>
         <hr>
-        <div class="navitem">
+        <button class:active={$activePanel === "settings"} class="navitem" on:click={() => $activePanel = "settings"}>
+            <span class="navicon"></span><span class="navlink">SETTINGS</span>
+        </button>
+        <button class:active={$activePanel === "upload"} class="navitem" on:click={() => $activePanel = "upload"}>
             <span class="navicon"></span><span class="navlink">UPLOAD</span>
-        </div>
+        </button>
     </div>
 </aside>
 
@@ -45,7 +41,6 @@
     }
 
     .sidebar {
-        min-width: 20vw;
         min-height: 50vh;
         background: var(--bg);
         grid-column: 1;
@@ -56,7 +51,7 @@
         margin: 0.2rem;
         gap: 1rem;
         padding: 0.5rem;
-        font-size: var(--font-artist)
+        padding-left: 0.1rem;
     }
 
     nav {
@@ -66,7 +61,35 @@
     }
 
     .navitem {
+        text-shadow: 0.03ex 0 0 currentcolor;
         display: flex;
+        border: none;
+        outline-offset: -2px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        padding: 0.2rem;
+        padding-left: 8px;
+        border-radius: 0vmin;
+        font-family: "ProFont";
+        font-size: var(--font-artist);
+        background-color: var(--bg);
+        color: var(--secondary);
+
+    }
+
+    .navitem:hover {
+        background: #2C7B6166;
+    }
+
+    .navitem.active {
+        background: #2C7B6122;
+        color: var(--accent);
+        border-left: 4px solid var(--primary);
+        padding-left: 3px;
+    }
+
+    .navitem:active {
+        transform:scale(0.97);
     }
 
     .navicon {

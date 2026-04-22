@@ -15,6 +15,7 @@
         padding: 0rem 0.2rem;
         margin: 0.2rem 0rem;
         flex: 1;
+        user-select: none;
     }
 
     img {

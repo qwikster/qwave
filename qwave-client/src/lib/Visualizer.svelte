@@ -6,23 +6,21 @@
 
 <style>
     .visualizer {
-        background: var(--bg);
+        background: var(--black);
         grid-column: 1;
         flex-shrink: 0;
         border: var(--border-tile) solid var(--primary);
         margin: 0.2rem;
         gap: 1rem;
         padding: 0.5rem;
-        min-width: 20vw;
 
         color: var(--accent);
     }
 
     @media (max-width: 540px) {
-        @media (max-height: 540px) {
-            .visualizer {
-                display: none;
-            }
-        }
+        .visualizer { min-height: 8vh; }
+    }
+    @media (max-height: 540px) and (max-width: 540px) {
+        .visualizer { display: none; }
     }
 </style>

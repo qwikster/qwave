@@ -7,8 +7,8 @@
     --secondary: #FF499E;
     --accent: #FFC60A;
     --progress: #FF499E;
-    --font-titles: 4vmin;
-    --font-artist: 3vmin;
+    --font-titles: 3vmin;
+    --font-artist: 2.4vmin;
     --font-info: 2vmin;
     --border-tile: 0.7vmin;
     --border-small: 0.5vmin;
@@ -26,7 +26,7 @@ body {
 
 @font-face {
     font-family: 'ProFont';
-    src: url('/src/assets/ProFont.ttf') format('truetype');
+    src: url('ProFont.ttf') format('truetype');
     font-style: normal;
     font-weight: normal;
 }

@@ -33,17 +33,14 @@
 
     .main {
         display: grid;
-        flex-direction: column;
+        grid-template-columns: 30vmin 1fr;
+        grid-template-rows: auto 1fr;
         flex: 1;
         overflow: hidden;
     }
 
-    .top {
-        display: flex;
-    }
-
-    .bottom {
-        display: flex;
+    .top, .bottom {
+        display: contents;
     }
 
     @media (max-width: 540px) {
@@ -52,8 +49,9 @@
             flex-direction: column-reverse;
         }
 
-        .top {
-            flex-direction: column;
+        .bottom {
+            display: flex;
+            flex-direction: row;
         }
     }
 </style>

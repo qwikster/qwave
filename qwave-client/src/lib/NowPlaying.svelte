@@ -50,7 +50,7 @@
         width: 100%;
         min-width: 0;
         height: 1.2vmin;
-        background: var(--primary);
+        background: var(--primary); /* remove after implemented */
         outline: none;
         cursor: pointer;
         margin-top: 5px;
@@ -131,6 +131,8 @@
         border-color: var(--secondary);
         border-radius: 5px;
         margin-top: 0.5rem;
+        padding-inline: 0.7vw;
+        padding-block: 0;
     }
 
     @media (max-width: 540px) {
