@@ -41,10 +41,9 @@
     }
 
     .clock {
-        background: var(--bg);
-        border: var(--border-tile) solid var(--dim);
         color: var(--dim);
-        padding: 0.2rem;
-        font-size: var(--font-artist);
+        font-size: var(--titles);
+        padding: 1vmin;
+        align-self: center;
     }
 </style>

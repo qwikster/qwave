@@ -4,7 +4,7 @@
     <div class="playing-info">
         <div class="playing-artist">NOW PLAYING: RICK ASTLEY</div>
         <div class="playing-title">Never Gonna Give You Up</div>
-        <input class="playing-seek" type="range">
+        <input class="playing-seek" type="range" style="--progress: 50%">
     </div>
     <div class="playing-controls">
         <div class="track">TRACK 2</div>
@@ -35,8 +35,8 @@
     .playing-info {
         display: flex;
         flex-direction: column;
-        flex: 1 1 auto;
         min-width: 0;
+        width: 100%;
     }
 
     .playing-artist {
@@ -45,15 +45,27 @@
     }
 
     .playing-seek {
+        display: block;
         -webkit-appearance: none;
         appearance: none;
         width: 100%;
-        min-width: 0;
-        height: 1.2vmin;
-        background: var(--primary); /* remove after implemented */
+        height: 3vmin;
+        background: transparent;
         outline: none;
         cursor: pointer;
-        margin-top: 5px;
+        margin-top: 0.5vh;
+    }
+
+    .playing-seek::-webkit-slider-runnable-track {
+        background: linear-gradient(
+            to right,
+            var(--primary) 0%,
+            var(--primary) var(--progress, 0%),
+            var(--dim) var(--progress, 0%),
+            var(--dim) 100%
+        );
+        height: 1.2vmin;
+        border-radius: 1vmin;
     }
 
     .playing-seek::-webkit-slider-thumb {
@@ -65,10 +77,7 @@
         border-radius: 50%;
         background: var(--secondary);
         cursor: pointer;
-    }
-
-    .playing-seek::-webkit-progress-value {
-        background: var(--secondary);
+        margin-top: -0.9vmin;
     }
 
     .playing-seek::-moz-range-thumb {
@@ -78,16 +87,6 @@
         border-radius: 50%;
         border-width: 4px;
         background: var(--secondary);
-    }
-
-    .playing-seek::-webkit-slider-runnable-track {
-        background: linear-gradient(
-            to right,
-            var(--primary) 0%,
-            var(--primary) var(--progress, 0%),
-            var(--dim) var(--progress, 0%),
-            var(--dim) 100%
-        );
     }
 
     .playing-seek::-moz-range-track {

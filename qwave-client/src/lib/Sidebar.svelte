@@ -1,22 +1,22 @@
 <script>
-    import { activePanel } from "./stores/ui.js";
+    import { activePanel, activeTab } from "./stores/ui.js";
 </script>
 
 <aside class="sidebar">
     <nav>
-        <button class:active={$activePanel === "songs"} class="navitem" on:click={() => $activePanel = "songs"}>
+        <button class:active={$activePanel === "songs" && $activeTab === "nav"} class="navitem" on:click={() => { $activePanel = "songs"; $activeTab = "nav" }}>
             <span class="navicon">󰎇</span><span class="navlink">SONGS</span>
         </button>
-        <button class:active={$activePanel === "artists"} class="navitem" on:click={() => $activePanel = "artists"}>
+        <button class:active={$activePanel === "artists" && $activeTab === "nav"} class="navitem" on:click={() => { $activePanel = "artists"; $activeTab = "nav" }}>
             <span class="navicon"></span><span class="navlink">ARTISTS</span>
         </button>
-        <button class:active={$activePanel === "albums"} class="navitem" on:click={() => $activePanel = "albums"}>
+        <button class:active={$activePanel === "albums" && $activeTab === "nav"} class="navitem" on:click={() => { $activePanel = "albums"; $activeTab = "nav" }}>
             <span class="navicon"></span><span class="navlink">ALBUMS</span>
         </button>
-        <button class:active={$activePanel === "playlists"} class="navitem" on:click={() => $activePanel = "playlists"}>
+        <button class:active={$activePanel === "playlists" && $activeTab === "nav"} class="navitem" on:click={() => { $activePanel = "playlists"; $activeTab = "nav" }}>
             <span class="navicon">󰐑</span><span class="navlink">PLAYLISTS</span>
         </button>
-        <button class:active={$activePanel === "recent"} class="navitem" on:click={() => $activePanel = "recent"}>
+        <button class:active={$activePanel === "recent" && $activeTab === "nav"} class="navitem" on:click={() => { $activePanel = "recent"; $activeTab = "nav" }}>
             <span class="navicon"></span><span class="navlink">RECENT</span>
         </button>
         <button class="navitem" on:click={() => null}>
@@ -24,11 +24,15 @@
         </button>
     </nav>
     <div class="sidebar-bottom">
+        <span class="navitem volume">
+            <span class="navicon" style="font-size: var(--font-info)">VOL</span>
+            <input class="volume-control" type="range" min="0" max="100" style="--volume: 50%">
+        </span>
         <hr>
-        <button class:active={$activePanel === "settings"} class="navitem" on:click={() => $activePanel = "settings"}>
+        <button class:active={$activeTab === "settings"} class="navitem" on:click={() => { $activeTab = "settings"; $activePanel = "none" }}>
             <span class="navicon"></span><span class="navlink">SETTINGS</span>
         </button>
-        <button class:active={$activePanel === "upload"} class="navitem" on:click={() => $activePanel = "upload"}>
+        <button class:active={$activeTab === "upload"} class="navitem" on:click={() => { $activeTab = "upload"; $activePanel = "none" }}>
             <span class="navicon"></span><span class="navlink">UPLOAD</span>
         </button>
     </div>
@@ -38,6 +42,12 @@
     hr {
         border: 1px solid var(--dim);
         margin: 0.2rem;
+    }
+
+    nav {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
     }
 
     .sidebar {
@@ -54,10 +64,71 @@
         padding-left: 0.1rem;
     }
 
-    nav {
+    .sidebar-bottom {
         display: flex;
         flex-direction: column;
-        overflow: hidden;
+    }
+
+    .volume {
+        display: flex;
+        align-items: center;
+        padding-right: 10px;
+    }
+
+    .volume-control {
+        -webkit-appearance: none;
+        appearance: none;
+        flex: 1;
+        min-width: 0;
+        height: 0.2vmin;
+        background: transparent;
+        outline: none;
+        cursor: pointer;
+    }
+
+    .volume-control::-webkit-slider-runnable-track {
+        height: 0.8vmin;
+        background: linear-gradient(
+            to right,
+            var(--primary) 0%,
+            var(--primary) var(--volume, 0%),
+            var(--dim) var(--volume, 0%),
+            var(--dim) 100%
+        );
+        border-radius: 1vmin;
+    }
+
+    .volume-control::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 2vmin;
+        height: 2vmin;
+        border: 0.5vmin solid var(--dim);
+        border-radius: 50%;
+        background: var(--secondary);
+        cursor: pointer;
+        margin-top: -0.6vmin;
+    }
+
+    .volume-control::-moz-range-track {
+        background: var(--dim);
+        height: 1.2vmin;
+        border-radius: 1vmin;
+    }
+
+    .volume-control::-moz-range-progress {
+        background: var(--primary);
+        height: 1.2vmin;
+        border-radius: 1vmin;
+    }
+
+    .volume-control::-moz-range-thumb {
+        width: 2vmin;
+        height: 2vmin;
+        border-color: #4C6460;
+        border-radius: 50%;
+        border-width: 4px;
+        background: var(--secondary);
     }
 
     .navitem {
@@ -74,7 +145,6 @@
         font-size: var(--font-artist);
         background-color: var(--bg);
         color: var(--secondary);
-
     }
 
     .navitem:hover {

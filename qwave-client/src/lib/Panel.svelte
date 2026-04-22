@@ -1,47 +1,48 @@
 <script>
-    import { activePanel } from "./stores/ui"
+    import { activeTab } from "./stores/ui"
+    import Tabs from "./Tabs.svelte"
+    import Nav from "./panels/Nav.svelte"
+    import Queue from "./panels/Queue.svelte"
+    import Lyrics from "./panels/Lyrics.svelte"
     import Login from "./panels/Login.svelte"
-    import Songs from "./panels/Songs.svelte"
-    import Artists from "./panels/Artists.svelte";
-    import Albums from "./panels/Albums.svelte";
-    import Playlists from "./panels/Playlists.svelte";
-    import Recent from "./panels/Recent.svelte";
     import Settings from "./panels/Settings.svelte";
     import Upload from "./panels/Upload.svelte";
 </script>
 
 <div class="panel">
-    {#if $activePanel === "login"}
-        <Login />
-    {:else if $activePanel === "songs"}
-        <Songs />
-    {:else if $activePanel === "artists"}
-        <Artists />
-    {:else if $activePanel === "albums"}
-        <Albums />
-    {:else if $activePanel === "playlists"}
-        <Playlists />
-    {:else if $activePanel === "recent"}
-        <Recent />
-    {:else if $activePanel === "settings"}
-        <Settings />
-    {:else if $activePanel === "upload"}
-        <Upload />
-    {:else}
-        <p>Invalid panel?</p>
-    {/if}
+    <Tabs />
+    <div class="content">
+        {#if $activeTab === "nav"}
+            <Nav />
+        {:else if $activeTab === "queue"}
+            <Queue />
+        {:else if $activeTab === "lyrics"}
+            <Lyrics />
+        {:else if $activeTab === "login"}
+            <Login />
+        {:else if $activeTab === "settings"}
+            <Settings />
+        {:else if $activeTab === "upload"}
+            <Upload />
+        {/if}
+    </div>
 </div>
 
 <style>
-    .panel {
+    .content {
         background: var(--bg);
-        grid-column: 2;
         overflow-y: auto;
         flex: 1;
         border: var(--border-tile) solid var(--dim);
-        margin: 0.2rem;
         padding: 0.5rem;
+    }
+
+    .panel {
+        margin: 0.2rem;
         min-width: 50vw;
+        grid-column: 2;
+        display: flex;
+        flex-direction: column;
     }
 
     p { margin: 0rem; }
