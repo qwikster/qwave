@@ -15,6 +15,6 @@
   },
   "dependencies": {
     "browser-id3-writer": "^6.3.1",
-    "music-metadata-browser": "^2.5.11"
+    "music-metadata": "^11.12.3"
   }
 }
