@@ -30,6 +30,9 @@
 
 <style>
     .content {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
         background: var(--bg);
         overflow-y: auto;
         flex: 1;
