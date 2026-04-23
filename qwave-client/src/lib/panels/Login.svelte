@@ -113,13 +113,13 @@
     button {
         font-family: "ProFont";
         font-size: var(--font-artist);
-        background: var(--dim);
-        color: var(--accent);
-        border-color: var(--primary);
-        border-width: var(--border-small);
+        background: var(--dimmer);
+        color: var(--secondary);
+        border: var(--dimish) solid var(--border-small);
+        transition: 0.2s ease all;
     }
 
-    button:hover { background: #FF499E22; }
+    button:hover { background: var(--dim); border-color: var(--primary); color: var(--accent); }
 
     hr { width: 90%; border: 0.3vh solid var(--dim); }
 </style>

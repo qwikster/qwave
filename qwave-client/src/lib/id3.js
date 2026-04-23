@@ -7,7 +7,7 @@ function makeFrame(id, value) {
 
   // header: 4 character tag id, 4 byte size, 2 byte flags, 1 byte encoding
   const buffer = new Uint8Array(10 + 1 + data.length)
-  for (let i = 0; i < 4; i++) buffer[i] = id.char.CodeAt(i) // tag id (ex. TIT2)
+  for (let i = 0; i < 4; i++) buffer[i] = id.charCodeAt(i) // tag id (ex. TIT2)
   const size = data.length + 1
   buffer[4] = (size >> 24) & 0x7f // size
   buffer[5] = (size >> 16) & 0x7f

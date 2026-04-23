@@ -3,7 +3,9 @@
     --bg: #121714;
     --border: #78A1BB;
     --primary: #14F5AA;
-    --dim: #2C7B61;
+    --dimish: #14F5AA99;
+    --dim: #14F5AA66;
+    --dimmer: #14F5AA33;
     --secondary: #FF499E;
     --accent: #FFC60A;
     --progress: #FF499E;

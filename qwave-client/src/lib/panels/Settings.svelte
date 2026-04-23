@@ -20,11 +20,11 @@
     button {
         font-family: "ProFont";
         font-size: var(--font-artist);
-        background: var(--dim);
-        color: var(--accent);
-        border-color: var(--primary);
-        border-width: var(--border-small);
+        background: var(--dimmer);
+        color: var(--secondary);
+        border: var(--dimish) solid var(--border-small);
+        transition: 0.2s ease all;
     }
 
-    button:hover { background: #FF499E22; }
+    button:hover { background: var(--dim); color: var(--accent); border-color: var(--primary); }
 </style>
