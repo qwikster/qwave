@@ -28,7 +28,7 @@ body {
 
 @font-face {
     font-family: 'ProFont';
-    src: url('ProFont.ttf') format('truetype');
+    src: url('./assets/ProFont.ttf') format('truetype');
     font-style: normal;
     font-weight: normal;
 }
