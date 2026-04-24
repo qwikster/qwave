@@ -1,1 +1,1 @@
-nav panel
+nav

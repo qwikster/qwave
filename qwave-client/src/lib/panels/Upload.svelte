@@ -140,7 +140,7 @@
         cursor: pointer;
         transition: all 0.2s;
         box-sizing: border-box;
-        max-width: 61vw;
+        max-width: 55vw;
     }
 
     .file-input-wrapper:hover { border-color: var(--primary); background: var(--dim); color: var(--accent); }
@@ -152,6 +152,7 @@
         gap: 0.8rem;
         justify-content: center;
         margin: 0.2rem 0rem;
+        max-width: 55wvw;
     }
 
     button {
