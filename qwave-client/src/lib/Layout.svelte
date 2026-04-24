@@ -29,6 +29,7 @@
         color: var(--secondary);
         font-family: 'ProFont', monospace;
         font-size: var(--font-titles);
+        overflow: hidden;
     }
 
     .main {
@@ -37,6 +38,7 @@
         grid-template-rows: auto 1fr;
         flex: 1;
         overflow: hidden;
+        min-height: 0;
     }
 
     .top, .bottom {

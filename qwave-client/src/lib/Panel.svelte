@@ -35,9 +35,9 @@
         flex: 1;
         background: var(--bg);
         overflow-y: auto;
-        flex: 1;
         border: var(--border-tile) solid var(--dim);
         padding: 0.5rem;
+        min-height: 0;
     }
 
     .panel {
