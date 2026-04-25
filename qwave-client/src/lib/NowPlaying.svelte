@@ -1,4 +1,6 @@
-<script></script>
+<script>
+    import { next, prev, play, togglePlaying } from "./stores/player";
+</script>
 
 <div class="now-playing">
     <div class="playing-info">
@@ -10,15 +12,16 @@
         <div class="track">TRACK 2</div>
         <div class="time">01:02/03:32</div>
         <div class="controls">
-            <button class="control" id="controls-prev">󰒮</button>
-            <button class="control" id="controls-pause">󰏤</button>
-            <button class="control" id="controls-next">󰒭</button>
+            <button class="control" id="controls-prev" on:click={() => prev()}>󰒮</button>
+            <button class="control" id="controls-pause" on:click={() => togglePlaying()}>󰏤</button>
+            <button class="control" id="controls-next" on:click={() => next()}>󰒭</button>
         </div>
     </div>
 </div>
 
 <style>
     .now-playing {
+        grid-area: nowplaying;
         background: var(--bg);
         grid-column: 2;
         display: flex;
@@ -134,9 +137,5 @@
         padding-block: 0;
     }
 
-    @media (max-width: 540px) {
-        .now-playing {
-            grid-column: span 2;
-        }
-    }
+    @media (max-width: 540px) { .now-playing { grid-column: span 2; } }
 </style>

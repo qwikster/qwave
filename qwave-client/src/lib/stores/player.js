@@ -12,6 +12,10 @@ export const currentTrack = derived(
   ([$queue, $queueIndex]) => $queue[$queueIndex] ?? null
 )
 
+export function togglePlaying() {
+  playing.set(!playing)
+}
+
 export function play(tracks, index = 0) {
   queue.set(tracks)
   queueIndex.set(index)
@@ -37,10 +41,8 @@ export function skip(index) {
 }
 
 export function next() {
-  queue.update(q => {
-    queueIndex.update(i => Math.min(i + 1, q.length - 1))
-    return q
-  })
+  const q = get(queue)
+  queueIndex.update(i => Math.min(i + 1, q.length - 1))
   playing.set(true)
 }
 

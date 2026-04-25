@@ -36,7 +36,7 @@
         const token = localStorage.getItem("token")
         let uploadFile
 
-        if (file.type === "audop/mpeg" || file.name.endsWith(".mp3")) {
+        if (file.type === "audio/mpeg" || file.name.endsWith(".mp3")) {
           uploadFile = await writeID3(file, meta)
         } else {
           uploadFile = file
@@ -152,7 +152,7 @@
         gap: 0.8rem;
         justify-content: center;
         margin: 0.2rem 0rem;
-        max-width: 55wvw;
+        max-width: 55vw;
     }
 
     button {

@@ -27,7 +27,7 @@
     }
 
     async function register() {
-      error = ""
+      rerror = ""
       loading = true
       try {
         const res = await api.register(rusername, rpassword)
@@ -63,7 +63,7 @@
             {loading ? '...' : "REGISTER"}
         </button>
         {#if rerror}
-        <div class="error">{error}</div>
+        <div class="error">{rerror}</div>
         {/if}
     </div>
 </div>
