@@ -3,8 +3,10 @@ from pathlib import Path
 from fastapi import APIRouter, HTTPException, status, Request
 from fastapi.responses import StreamingResponse, FileResponse
 
+from qwave.api.auth import get_current_user
+
 from qwave.models import Track, Job
-from qwave.depends import DBDep, UserDep
+from qwave.depends import DBDep
 from qwave.utils.log_item import log_item
 
 router = APIRouter()
@@ -27,8 +29,15 @@ def stream_range(
             yield data
 
 @router.get("/{track_id}")
-# HACK: remove UserDep for html testing, or curl | mpv -
-async def stream_track(track_id: int, request: Request, db: DBDep, user: UserDep):
+async def stream_track(track_id: int, token: str, request: Request, db: DBDep):
+    user = get_current_user(db, token)
+
+    if not user:
+        raise HTTPException(
+            status_code = status.HTTP_401_UNAUTHORIZED,
+            detail = "Invalid or expired token"
+        )
+
     track = db.query(Track).filter(Track.id == track_id).first()
     if not track:
         raise HTTPException(
