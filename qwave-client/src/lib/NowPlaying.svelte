@@ -1,20 +1,86 @@
 <script>
-    import { next, prev, play, togglePlaying } from "./stores/player";
+    import { onDestroy } from "svelte"
+    import { currentTrack, playing, progress, duration, volume, next, prev, togglePlaying } from "./stores/player";
+    import { api } from "./stores/api";
+
+    let audio = new Audio()
+    let prevTrack = null
+    let currentTime = 0
+
+    $: if ($currentTrack && $currentTrack.id !== prevTrack) {
+      prevTrack = $currentTrack.id
+      const token = localStorage.getItem("token")
+      console.log($currentTrack)
+      audio.src = `${api.stream($currentTrack.id)}?token=${token}`
+      audio.load()
+      if ($playing) audio.play()
+    }
+
+    $: if ($playing) { audio.play().catch(() => playing.set(false)) } else { audio.pause() }
+
+    $: audio.volume = $volume
+
+    let seeking = false
+
+    audio.addEventListener("timeupdate", () => {
+      if (!seeking) {
+        duration.set(audio.duration || 0)
+        currentTime = audio.currentTime
+        progress.set(audio.duration ? (audio.currentTime / audio.duration) * 100 : 0)
+      }
+    })
+
+    audio.addEventListener("ended", () => next())
+    audio.addEventListener("error", () => playing.set(false))
+
+    function onSeek(e) {
+      if (audio.duration) {
+        audio.currentTime = (e.target.value / 100) * audio.duration
+      }
+    }
+
+    function formatTime(seconds) {
+      if (!seconds || isNaN(seconds)) return "00:00"
+      const m = Math.floor(seconds / 60).toString().padStart(2, "0")
+      const s = Math.floor(seconds % 60).toString().padStart(2, "0")
+      return `${m}:${s}`
+    }
+
+    function primaryArtist(track) {
+      return track?.artists.find(a => a.is_primary)?.name
+      ?? track?.artists[0]?.name
+      ?? "Unknown Artist"
+    }
+
+    onDestroy(() => {
+      audio.pause()
+      audio.src = ""
+    })
+
 </script>
 
 <div class="now-playing">
     <div class="playing-info">
-        <div class="playing-artist">NOW PLAYING: RICK ASTLEY</div>
-        <div class="playing-title">Never Gonna Give You Up</div>
-        <input class="playing-seek" type="range" style="--progress: 50%">
+        <div class="playing-artist">{$currentTrack ? `NOW PLAYING: ${primaryArtist($currentTrack)}` : "NOT PLAYING"}</div>
+        <div class="playing-title">{$currentTrack?.title ?? "splash text here later"}</div>
+        <input class="playing-seek" type="range" min="0" max="100"
+            value={$progress} style="--progress: {$progress}%"
+            on:mousedown={() => {seeking = true}} on:mouseup={() => {seeking = false}}
+            on:input={e => {
+              seeking = true
+              audio.currentTime = (e.target.value / 100) * (audio.duration || 0)
+              currentTime = audio.currentTime
+        }}>
     </div>
     <div class="playing-controls">
-        <div class="track">TRACK 2</div>
-        <div class="time">01:02/03:32</div>
+        <div class="track">{$currentTrack ? `TRACK ${$currentTrack.track_number ?? ""}` : "SINGLE"}</div>
+        <div class="time">{formatTime(currentTime)}/{formatTime($duration)}</div>
         <div class="controls">
-            <button class="control" id="controls-prev" on:click={() => prev()}>󰒮</button>
-            <button class="control" id="controls-pause" on:click={() => togglePlaying()}>󰏤</button>
-            <button class="control" id="controls-next" on:click={() => next()}>󰒭</button>
+            <button class="control" id="controls-prev" on:click={prev}>󰒮</button>
+            <button class="control" id="controls-pause" on:click={() => playing.update(p => !p)}>
+                {$playing ? "󰏤" : "󰐊"}
+            </button>
+            <button class="control" id="controls-next" on:click={next}>󰒭</button>
         </div>
     </div>
 </div>

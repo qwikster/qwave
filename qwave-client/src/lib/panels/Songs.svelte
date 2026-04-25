@@ -93,6 +93,7 @@
         display: flex;
         flex-direction: column;
         min-width: 0;
+        flex: 1;
     }
 
     .track-title {

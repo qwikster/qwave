@@ -1,5 +1,6 @@
 <script>
     import { activePanel, activeTab } from "./stores/ui.js";
+    import { volume } from "./stores/player.js";
 </script>
 
 <aside class="sidebar">
@@ -26,7 +27,7 @@
     <div class="sidebar-bottom">
         <span class="navitem volume">
             <span class="navicon" style="font-size: var(--font-info)">VOL</span>
-            <input class="volume-control" type="range" min="0" max="100" style="--volume: 50%">
+            <input class="volume-control" type="range" min="0" max="1" step="0.01" style="--volume: {$volume * 100}%" bind:value={$volume}>
         </span>
         <hr>
         <button class:active={$activeTab === "settings"} class="navitem" on:click={() => { $activeTab = "settings"; $activePanel = "none" }}>
@@ -85,6 +86,8 @@
         background: transparent;
         outline: none;
         cursor: pointer;
+        padding: 0 10px;
+        box-sizing: border-box;
     }
 
     .volume-control::-webkit-slider-runnable-track {
@@ -109,6 +112,8 @@
         background: var(--secondary);
         cursor: pointer;
         margin-top: -0.6vmin;
+        position: relative;
+        z-index: 2;
     }
 
     .volume-control::-moz-range-track {
