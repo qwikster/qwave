@@ -6,6 +6,7 @@
 
 <style>
     .visualizer {
+        grid-area: visualizer;
         background: var(--black);
         grid-column: 1;
         flex-shrink: 0;
@@ -13,12 +14,11 @@
         margin: 0.2rem;
         gap: 1rem;
         padding: 0.5rem;
-
         color: var(--accent);
     }
 
     @media (max-width: 540px) {
-        .visualizer { min-height: 8vh; }
+        .visualizer { min-height: 8vh; grid-column: span 2; }
     }
     @media (max-height: 540px) and (max-width: 540px) {
         .visualizer { display: none; }

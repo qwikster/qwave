@@ -29,13 +29,15 @@
         color: var(--secondary);
         font-family: 'ProFont', monospace;
         font-size: var(--font-titles);
+        height: 90vh;
         overflow: hidden;
     }
 
     .main {
         display: grid;
-        grid-template-columns: 30vmin 1fr;
+        grid-template-columns: 24vmin 1fr;
         grid-template-rows: auto 1fr;
+        grid-template-areas: "visualizer nowplaying" "sidebar panel";
         flex: 1;
         overflow: hidden;
         min-height: 0;
@@ -47,13 +49,8 @@
 
     @media (max-width: 540px) {
         .main {
-            display: flex;
-            flex-direction: column-reverse;
-        }
-
-        .bottom {
-            display: flex;
-            flex-direction: row;
+            grid-template-rows: 0.8fr auto auto 0.2fr;
+            grid-template-areas: "sidebar panel" "nowplaying nowplaying" "visualizer visualizer";
         }
     }
 </style>

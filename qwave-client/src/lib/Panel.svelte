@@ -38,15 +38,17 @@
         border: var(--border-tile) solid var(--dim);
         padding: 0.5rem;
         min-height: 0;
+        scrollbar-width: thin;
+        scrollbar-color: var(--dim) var(--bg);
     }
 
     .panel {
+        grid-area: panel;
         margin: 0.2rem;
+        min-height: 0;
         min-width: 50vw;
         grid-column: 2;
         display: flex;
         flex-direction: column;
     }
-
-    p { margin: 0rem; }
 </style>

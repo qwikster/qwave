@@ -16,6 +16,7 @@
         margin: 0.2rem 0rem;
         flex: 1;
         user-select: none;
+        max-height: 6vmin;
     }
 
     img {

@@ -51,12 +51,12 @@
                     <span class="duration">{getDuration(track.duration)}</span>
                     <div class="track-actions">
                         <button title="play next" on:click|stopPropagation={() => playNext(track)}>
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="3.5vh" height="3.5vh" display="bllock" fill="currentColor">
+                            <svg class="svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="2vmax" height="2vmax" display="bllock" fill="currentColor">
                                 <path fill="var(--primary)" d="M6 2.86V5H3a1 1 0 00-1 1v12a1 1 0 102 0V7h2v2.137a.5.5 0 00.748.434L13 5.998 6.748 2.426A.5.5 0 006 2.86ZM21 5h-5a1 1 0 100 2h5a1 1 0 100-2Zm0 6H9a1 1 0 000 2h12a1 1 0 000-2Zm0 6H9a1 1 0 000 2h12a1 1 0 000-2Z"></path>
                             </svg>
                         </button>
                         <button title="add to queue" on:click|stopPropagation={() => queueItem(track)}>
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="3.5vh" height="3.5vh" display="bllock" fill="currentColor">
+                            <svg class="svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="2vmax" height="2vmax" display="bllock" fill="currentColor">
                                 <path fill="var(--primary)" d="M21 6.998a1 1 0 100-2H9a1 1 0 000 2h12ZM6 21.138a.5.5 0 00.748.434L13 18l-6.252-3.573A.5.5 0 006 14.86V17H4V6a1 1 0 00-2 0v12a1 1 0 001 1h3v2.138Zm15-8.14a1 1 0 000-2H9a1 1 0 000 2h12Zm0 6a1 1 0 000-2h-5a1 1 0 000 2h5Z"></path>
                             </svg>
                         </button>
@@ -73,10 +73,6 @@
         display: flex;
         flex-direction: column;
     }
-
-    .status {}
-
-    .error {}
 
     .track {
         display: flex;

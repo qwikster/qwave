@@ -14,7 +14,7 @@
             <span class="navicon"></span><span class="navlink">ALBUMS</span>
         </button>
         <button class:active={$activePanel === "playlists" && $activeTab === "nav"} class="navitem" on:click={() => { $activePanel = "playlists"; $activeTab = "nav" }}>
-            <span class="navicon">󰐑</span><span class="navlink">PLAYLISTS</span>
+            <span class="navicon">󰐑</span><span class="navlink">LISTS</span>
         </button>
         <button class:active={$activePanel === "recent" && $activeTab === "nav"} class="navitem" on:click={() => { $activePanel = "recent"; $activeTab = "nav" }}>
             <span class="navicon"></span><span class="navlink">RECENT</span>
@@ -51,7 +51,8 @@
     }
 
     .sidebar {
-        min-height: 50vh;
+        grid-area: sidebar;
+        /* min-height: 50vh; */
         background: var(--bg);
         grid-column: 1;
         display: flex;
