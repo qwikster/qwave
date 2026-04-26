@@ -1,4 +1,4 @@
-const BASE = "/api"
+const BASE = import.meta.env.DEV ? "/api" : ""
 
 async function get(path) {
   const token = localStorage.getItem("token")

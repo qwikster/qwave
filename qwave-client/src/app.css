@@ -25,6 +25,7 @@ body {
     place-items: center;
     min-height: 100vh;
     padding: 0vmin 5vmin;
+    overflow-x: hidden;
 }
 
 @font-face {

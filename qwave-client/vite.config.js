@@ -15,8 +15,5 @@ export default defineConfig({
   },
   build: {
     outDir: '../qwave-server/src/qwave/static/app'
-  },
-  optimizeDeps: {
-    include: ['browser-id3-writer']
   }
 })

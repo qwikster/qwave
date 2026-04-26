@@ -123,14 +123,15 @@
         outline: none;
         cursor: pointer;
         margin-top: 0.5vh;
+        box-sizing: border-box;
     }
 
     .playing-seek::-webkit-slider-runnable-track {
         background: linear-gradient(
             to right,
             var(--primary) 0%,
-            var(--primary) var(--progress, 0%),
-            var(--dim) var(--progress, 0%),
+            var(--primary) calc(var(--progress, 0%) - 0.8%),
+            var(--dim) calc(var(--progress, 0%) + 0.4%),
             var(--dim) 100%
         );
         height: 1.2vmin;
@@ -146,7 +147,7 @@
         border-radius: 50%;
         background: var(--secondary);
         cursor: pointer;
-        margin-top: -0.9vmin;
+        margin-top: calc(-1.5vmin + 0.6vmin)
     }
 
     .playing-seek::-moz-range-thumb {
@@ -201,7 +202,10 @@
         margin-top: 0.5rem;
         padding-inline: 0.7vw;
         padding-block: 0;
+        cursor: pointer;
     }
+
+    .control:hover { color: var(--accent); border-style: solid }
 
     @media (max-width: 540px) { .now-playing { grid-column: span 2; } }
 </style>

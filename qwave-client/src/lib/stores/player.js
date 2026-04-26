@@ -32,7 +32,9 @@ export function playNext(track) {
 }
 
 export function queueItem(track) {
+  const wasEmpty = get(queue).length === 0
   queue.update(q => [...q, track])
+  if (wasEmpty) playing.set(true)
 }
 
 export function skip(index) {

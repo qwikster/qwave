@@ -31,6 +31,7 @@
         font-size: var(--font-titles);
         height: 90vh;
         overflow: hidden;
+        max-width: 100%;
     }
 
     .main {
