@@ -7,6 +7,7 @@
     import Login from "./panels/Login.svelte"
     import Settings from "./panels/Settings.svelte";
     import Upload from "./panels/Upload.svelte";
+    import Artist from "./panels/Artist.svelte"
 </script>
 
 <div class="panel">
@@ -24,6 +25,8 @@
             <Settings />
         {:else if $activeTab === "upload"}
             <Upload />
+        {:else if $activeTab === "artist"}
+            <Artist />
         {/if}
     </div>
 </div>

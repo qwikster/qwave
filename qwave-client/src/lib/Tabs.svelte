@@ -2,7 +2,7 @@
     import { activePanel, activeTab } from "./stores/ui"
 
     const mainTabs = ["nav", "queue", "lyrics"]
-    const utilityTabs = ["login", "settings", "upload"]
+    const utilityTabs = ["login", "settings", "upload", "artist", "album"]
 
     $: showUtility = utilityTabs.includes($activeTab)
 </script>
@@ -20,7 +20,7 @@
 
 <style>
     .tabs-bar {
-        margin: 0 1vw -0.45vh 1vw;
+        margin: 0 1vw -0.2vh 1vw;
         display: flex;
         gap: 0.3rem;
     }
@@ -33,6 +33,7 @@
         border: var(--border-small) solid var(--dim);
         cursor: pointer;
         transition: all 0.2s ease;
+        border-bottom: none;
     }
 
     button:hover { color: var(--primary); background: var(--dim) }

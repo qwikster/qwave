@@ -1,7 +1,7 @@
 <script>
   import { onMount } from "svelte"
   import Layout from "./lib/Layout.svelte"
-  import { activeTab } from "./lib/stores/ui.js"
+  import { activePanel, activeTab } from "./lib/stores/ui.js"
   import { api } from "./lib/stores/api.js"
 
   onMount(async () => {
@@ -13,6 +13,7 @@
     try {
       await api.me()
       activeTab.set("nav")
+      activePanel.set("songs")
     } catch {
       localStorage.removeItem("token")
       activeTab.set("login")

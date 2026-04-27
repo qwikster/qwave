@@ -11,9 +11,9 @@
         <button class:active={$activePanel === "artists" && $activeTab === "nav"} class="navitem" on:click={() => { $activePanel = "artists"; $activeTab = "nav" }}>
             <span class="navicon"></span><span class="navlink">ARTISTS</span>
         </button>
-        <button class:active={$activePanel === "albums" && $activeTab === "nav"} class="navitem" on:click={() => { $activePanel = "albums"; $activeTab = "nav" }}>
+        <!-- <button class:active={$activePanel === "albums" && $activeTab === "nav"} class="navitem" on:click={() => { $activePanel = "albums"; $activeTab = "nav" }}>
             <span class="navicon"></span><span class="navlink">ALBUMS</span>
-        </button>
+        </button> shhhhhhh it doesnt exist shhhh -->
         <button class:active={$activePanel === "playlists" && $activeTab === "nav"} class="navitem" on:click={() => { $activePanel = "playlists"; $activeTab = "nav" }}>
             <span class="navicon">󰐑</span><span class="navlink">LISTS</span>
         </button>

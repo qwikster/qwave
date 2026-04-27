@@ -22,10 +22,10 @@
 body {
     margin: 0;
     display: grid;
-    place-items: center;
+    align-items: center;
+    place-items: left;
     min-height: 100vh;
-    padding: 0vmin 5vmin;
-    overflow-x: hidden;
+    padding: 0vw 10vw;
 }
 
 @font-face {
