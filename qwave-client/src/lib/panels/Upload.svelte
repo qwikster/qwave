@@ -3,6 +3,7 @@
     import { writeID3 } from "../id3";
     import { slide } from "svelte/transition";
 
+    export const BASE = import.meta.env.DEV ? "/api" : ""
     let file = null
     let meta = { title: "", artist: "", album: "", track: "", year: "" }
     let status = ""
@@ -46,7 +47,7 @@
         const form = new FormData()
         form.append("file", uploadFile)
 
-        const res = await fetch("/api/tracks/upload", {
+        const res = await fetch(`${BASE}/tracks/upload`, {
           method: "POST",
           headers: { Authorization: `Bearer ${token}` },
           body: form,

@@ -1,4 +1,7 @@
-const BASE = import.meta.env.DEV ? "/api" : ""
+import Login from "../panels/Login.svelte"
+import { activeTab } from "./ui"
+
+export const BASE = import.meta.env.DEV ? "/api" : ""
 
 async function get(path) {
   const token = localStorage.getItem("token")
@@ -6,6 +9,7 @@ async function get(path) {
     method: "GET",
     headers: token ? { Authorization: `Bearer ${token}` } : {}
   })
+  if (res.status == 401) activeTab.set("login")
   if (!res.ok) throw new Error(`${res.status} ${path}`)
   return res.json()
 }
