@@ -1,6 +1,25 @@
 <script>
     import { activePanel, activeTab } from "./stores/ui.js";
-    import { volume } from "./stores/player.js";
+    import { play, volume } from "./stores/player.js";
+    import { api } from "./stores/api.js";
+
+    // WARN: I JUST STOLE THIS FROM GOOGLE
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        // Generate a random index from 0 to i
+        const j = Math.floor(Math.random() * (i + 1));
+        // Swap elements array[i] and array[j] using destructuring
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    async function random() {
+     const res = await api.tracks()
+     let tracks = res.tracks
+     shuffle(tracks)
+     play(tracks, 0)
+    }
 </script>
 
 <aside class="sidebar">
@@ -20,7 +39,7 @@
         <button class:active={$activePanel === "recent" && $activeTab === "nav"} class="navitem" on:click={() => { $activePanel = "recent"; $activeTab = "nav" }}>
             <span class="navicon"></span><span class="navlink">RECENT</span>
         </button>
-        <button class="navitem" on:click={() => null}>
+        <button class="navitem" on:click={() => random()}>
             <span class="navicon"></span><span class="navlink">RANDOM</span>
         </button>
     </nav>

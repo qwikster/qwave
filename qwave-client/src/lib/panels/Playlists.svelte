@@ -1,1 +1,8 @@
-playlists
+<p>ran out of time...<br>playlists in full release :(</p>
+
+<style>
+    p {
+        text-align: center;
+        font-size: var(--font-info);
+    }
+</style>

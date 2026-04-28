@@ -21,7 +21,7 @@ you can always make your own frontend if this isn't to your liking!
 qWave is designed to run on Linux only. I recommend you run it on a dedicated server machine (as simple as a rpi), but it will work just fine running in the background on your desktop machine, as long as you're okay with it being the dependency for all your devices.
 
 - dependencies: python, a pypi manager, and ffmpeg! others will be handled by python. for development, you'll also need `npm`.
-- Use either `pipx` or your desired tool to download qwave from pypi: `pipx install qWave 
+- Use either `pipx` or your desired tool to download qwave from pypi: `pipx install qWave`
 > [!NOTE]
 > You can also use qWave by directly installing it as shown below, but you'll have to manually set up a script to start it because of its unmanaged dependencies.
 - set up your server: `qwave_init`, and follow the directions!
@@ -36,7 +36,7 @@ some useful information:
 - first: `git clone https://github.com/qwikster/qwave.git && cd qwave`.
 - you'll need to create a venv: `python3 -m venv .venv` then `source .venv/bin/activate`
 - install qwave as a package locally: `pip install -e ./qwave-server`
-- if you don't already have a local install, follow the installation instructions from step ███.
+- if you don't already have a local install, follow the installation instructions from after installation.
 - start the backend: `qwave`
 - start the frontend as a development server: `npm run dev` and follow that ip
 - frontend changes will update in real time! run `npm run build` to move to the install for local use
@@ -51,6 +51,9 @@ some useful information:
 - [ ] more intuitive web frontend
 - [ ] finish the visualizer thingy
 - [ ] proper playlist support
+- [ ] move queues to server side
+- [ ] move import flow to server side
+- [ ] favourites system
 - [ ] content recommendations
 - [ ] handle albums and singles better
 - [ ] more file organization

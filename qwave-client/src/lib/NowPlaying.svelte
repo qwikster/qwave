@@ -62,7 +62,7 @@
 <div class="now-playing">
     <div class="playing-info">
         <div class="playing-artist">{$currentTrack ? `NOW PLAYING: ${primaryArtist($currentTrack)}` : "NOT PLAYING"}</div>
-        <div class="playing-title">{$currentTrack?.title ?? "splash text here later"}</div>
+        <div class="playing-title">{$currentTrack?.title ?? "pick a song!"}</div>
         <input class="playing-seek" type="range" min="0" max="100"
             value={$progress} style="--progress: {$progress}%"
             on:mousedown={() => {seeking = true}} on:mouseup={() => {seeking = false}}
