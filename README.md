@@ -46,21 +46,22 @@ some useful information:
 - PRs are welcome!! more detailed documentation will come soon!
 
 ## things i want to add before a full release:
-[ ] android client
-[ ] linux client (CLI...?)
-[ ] more intuitive web frontend
-[ ] proper playlist support
-[ ] content recommendations
-[ ] handle albums and singles better
-[ ] more file organization
-[ ] way better import flow
-[ ] content id, auto imports
-[ ] better security
-[ ] per-account songs and features
-[ ] editing for frontend
-[ ] more useful endpoints
-[ ] branding options
-[ ] more documentation
-[ ] last.fm and discord integration
-[ ] anything you guys suggest
-[ ] promote to the public!
+- [ ] android client
+- [ ] linux client (CLI...?)
+- [ ] more intuitive web frontend
+- [ ] finish the visualizer thingy
+- [ ] proper playlist support
+- [ ] content recommendations
+- [ ] handle albums and singles better
+- [ ] more file organization
+- [ ] way better import flow
+- [ ] content id, auto imports
+- [ ] better security
+- [ ] per-account songs and features
+- [ ] editing for frontend
+- [ ] more useful endpoints
+- [ ] branding options
+- [ ] more documentation
+- [ ] last.fm and discord integration
+- [ ] anything you guys suggest
+- [ ] promote to the public!
