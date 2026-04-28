@@ -11,7 +11,7 @@
     onMount(async () => {
       try {
         const res = await api.artist(get(tabMeta))
-        tracks = res.tracks.sort((a, b) => a.name.localeCompare(b.title))
+        tracks = res.tracks.sort((a, b) => a.title.localeCompare(b.title))
         const res2 = await api.artistName(get(tabMeta))
         artist = res2
         for (const track of tracks) {
@@ -43,7 +43,7 @@
 	{:else}
 	    <div class="artist-header">
     	    <div class="artist">{artist.name}: {artist.track_count} track{s(artist.track_count)}</div>
-            <button class="playall" title="play all" on:click|stopPropagation={() => play}>󱏦</button>
+            <button class="playall" title="play all" on:click|stopPropagation={() => play(tracks, 0)}>󱏦</button>
 		</div>
 		<div><hr style="border-color: var(--primary)"></div>
         {#each tracks as track}

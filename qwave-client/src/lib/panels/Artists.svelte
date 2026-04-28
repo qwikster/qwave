@@ -65,9 +65,6 @@
                 </div>
                 <div class="artist-right">
                     <span class="tracknum">{artist.track_count} TRACK{s(artist.track_count)}</span>
-                    <div class="actions">
-                        <button title="play all" on:click|stopPropagation={() => play}>󱏦</button>
-                    </div>
                 </div>
             </div>
         {/each}
