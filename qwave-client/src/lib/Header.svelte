@@ -1,11 +1,19 @@
 <script>
     import logo from "/src/assets/logo_lg.png"
+    let time = $state(new Date())
+
+    $effect(() => {
+      const interval = setInterval(() => {
+        time = new Date()
+      }, 1000);
+      return () => clearInterval(interval)
+    })
 </script>
 
 <header>
     <img src="{logo}" alt="n" class="logo">
     <input id="search" type="search" class="search" placeholder=" SEARCH..." />
-    <span class="clock">10:10PM</span>
+    <span class="clock">{time.toLocaleTimeString()}</span>
 </header>
 
 <style>
