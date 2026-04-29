@@ -8,6 +8,7 @@
     import Settings from "./panels/Settings.svelte";
     import Upload from "./panels/Upload.svelte";
     import Artist from "./panels/Artist.svelte"
+    import Search from "./panels/Search.svelte"
 </script>
 
 <div class="panel">
@@ -27,6 +28,8 @@
             <Upload />
         {:else if $activeTab === "artist"}
             <Artist />
+        {:else if $activeTab === "search"}
+            <Search />
         {/if}
     </div>
 </div>

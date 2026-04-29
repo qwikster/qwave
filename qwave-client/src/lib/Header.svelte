@@ -1,6 +1,15 @@
 <script>
     import logo from "/src/assets/logo_lg.png"
     let time = $state(new Date())
+    import { activeTab, tabMeta } from "./stores/ui";
+    let query = ""
+
+    function keydown(e) {
+      if (e.key === "Enter" && query.trim()) {
+        activeTab.set("search")
+        tabMeta.set(query.trim())
+      }
+    }
 
     $effect(() => {
       const interval = setInterval(() => {
@@ -12,7 +21,7 @@
 
 <header>
     <img src="{logo}" alt="n" class="logo">
-    <input id="search" type="search" class="search" placeholder=" SEARCH..." />
+    <input type="search" class="search" placeholder=" SEARCH..." bind:value={query} on:keydown={keydown}/>
     <span class="clock">{time.toLocaleTimeString()}</span>
 </header>
 
