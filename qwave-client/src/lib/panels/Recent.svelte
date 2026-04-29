@@ -1,14 +1,9 @@
 <script>
     import { onMount } from "svelte"
     import { api } from "../stores/api"
-    import { play, playNext, queueItem, currentTrack } from "../stores/player";
-    let tracks = []
+    import { play, playNext, queueItem, currentTrack, recentTracks } from "../stores/player";
     let loading = false
     let error = ""
-
-    onMount(() => {
-      tracks = JSON.parse(localStorage.getItem("recent")) || []
-    })
 
     function getDuration(seconds) {
       const m = Math.floor(seconds / 60).toString().padStart(2, "0")
@@ -28,13 +23,13 @@
         <div class="status">loading...</div>
     {:else if error}
         <div class="error">{error}</div>
-    {:else if tracks.length === 0}
-        <div class="status">no tracks found! open the upload tab!</div>
+    {:else if $recentTracks.length === 0}
+        <div class="status">no recents! play some!</div>
     {:else}
-        {#each tracks as track}
+        {#each $recentTracks as track}
             <!-- svelte-ignore a11y_click_events_have_key_events -->
             <!-- svelte-ignore a11y_no_static_element_interactions -->
-            <div class="track" class:active={$currentTrack?.id === track.id} on:click={() => play(tracks, tracks.indexOf(track))}>
+            <div class="track" class:active={$currentTrack?.id === track.id} on:click={() => play($recentTracks, $recentTracks.indexOf(track))}>
                 <div class="track-main">
                     <div class="track-title">{track.title}</div>
                     <div class="track-artist">{primaryArtist(track)}</div>

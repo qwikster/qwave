@@ -7,6 +7,20 @@ export const progress =   writable(0)
 export const duration =   writable(0)
 export const volume =     writable(1) //0-1
 
+const recent = typeof window !== "undefined"
+  ? JSON.parse(localStorage.getItem("recent")) || []
+  : []
+
+export const recentTracks = writable(recent)
+
+export function addRecent(track) {
+  recentTracks.update(list => {
+    const updated = [track, ...list.filter(t => t.id !== track.id)]
+    localStorage.setItem("recent", JSON.stringify(updated))
+    return updated
+  })
+}
+
 export const currentTrack = derived(
   [queue, queueIndex],
   ([$queue, $queueIndex]) => $queue[$queueIndex] ?? null

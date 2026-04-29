@@ -1,6 +1,6 @@
 <script>
     import { onDestroy } from "svelte"
-    import { currentTrack, playing, progress, duration, volume, next, prev, togglePlaying } from "./stores/player";
+    import { currentTrack, playing, progress, duration, volume, next, prev, togglePlaying, addRecent } from "./stores/player";
     import { api } from "./stores/api";
 
     let audio = new Audio()
@@ -15,10 +15,7 @@
       audio.load()
       if ($playing) audio.play()
 
-      const exist = JSON.parse(localStorage.getItem("recent")) || []
-      const update = [$currentTrack, ...exist.filter(t => t.id !== $currentTrack.id)]
-      localStorage.setItem("recent", JSON.stringify(update))
-      console.log(localStorage.getItem("recent"))
+      addRecent($currentTrack)
     }
 
     $: if ($playing) { audio.play().catch(() => playing.set(false)) } else { audio.pause() }
