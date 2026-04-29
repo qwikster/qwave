@@ -10,10 +10,15 @@
     $: if ($currentTrack && $currentTrack.id !== prevTrack) {
       prevTrack = $currentTrack.id
       const token = localStorage.getItem("token")
-      console.log($currentTrack)
+
       audio.src = `${api.stream($currentTrack.id)}?token=${token}`
       audio.load()
       if ($playing) audio.play()
+
+      const exist = JSON.parse(localStorage.getItem("recent")) || []
+      const update = [$currentTrack, ...exist.filter(t => t.id !== $currentTrack.id)]
+      localStorage.setItem("recent", JSON.stringify(update))
+      console.log(localStorage.getItem("recent"))
     }
 
     $: if ($playing) { audio.play().catch(() => playing.set(false)) } else { audio.pause() }

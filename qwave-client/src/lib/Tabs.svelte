@@ -2,7 +2,7 @@
     import { activePanel, activeTab } from "./stores/ui"
 
     const mainTabs = ["nav", "queue", "lyrics"]
-    const utilityTabs = ["login", "settings", "upload", "artist", "album"]
+    const utilityTabs = ["login", "settings", "upload", "artist", "search"]
 
     $: showUtility = utilityTabs.includes($activeTab)
 </script>
