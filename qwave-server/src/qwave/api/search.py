@@ -54,7 +54,7 @@ def search(
         results["albums"] = [AlbumResult(id = album.id, title = album.title) for album in albums]
 
     if type in ["artists", "all"]:
-        artists = db.query(Artist).filter(Artist.name.ilike(pattern)).limit(limit).all()
+        artists = db.query(Artist).filter(Artist.name.ilike(pattern)).filter(Artist.tracks.any()).limit(limit).all()
         results["artists"] = [ArtistResult(id = artist.id, name = artist.name) for artist in artists]
 
     return SearchResponse(**results)

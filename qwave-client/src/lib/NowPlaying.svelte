@@ -2,8 +2,10 @@
     import { onDestroy } from "svelte"
     import { currentTrack, playing, progress, duration, volume, next, prev, togglePlaying, addRecent } from "./stores/player";
     import { api } from "./stores/api";
+    import { audio, audioctx } from "./stores/audio";
 
-    let audio = new Audio()
+    function resume() { if (audioctx.state === "suspended") audioctx.resume() }
+
     let prevTrack = null
     let currentTime = 0
 
@@ -79,7 +81,7 @@
         <div class="time">{formatTime(currentTime)}/{formatTime($duration)}</div>
         <div class="controls">
             <button class="control" id="controls-prev" on:click={prev}>󰒮</button>
-            <button class="control" id="controls-pause" on:click={() => playing.update(p => !p)}>
+            <button class="control" id="controls-pause" on:click={() => {resume(); playing.update(p => !p);}}>
                 {$playing ? "󰏤" : "󰐊"}
             </button>
             <button class="control" id="controls-next" on:click={next}>󰒭</button>
