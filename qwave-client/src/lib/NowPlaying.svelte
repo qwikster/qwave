@@ -4,6 +4,23 @@
     import { api } from "./stores/api";
     import { audio, audioctx } from "./stores/audio";
 
+    function updateMedia(track) {
+      if (!navigator.mediaSession) return
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: track.title,
+        album:track.album?.title ?? "",
+        artist: track.artists?.find(a => a.is_primary)?.name ?? track.artists?.[0]?.name ?? "Unknown Artist",
+      })
+    }
+
+    navigator.mediaSession.setActionHandler("play", () => playing.set(true))
+    navigator.mediaSession.setActionHandler("pause", () => playing.set(false))
+    navigator.mediaSession.setActionHandler("nexttrack", () => next())
+    navigator.mediaSession.setActionHandler("previoustrack", () => prev())
+    navigator.mediaSession.setActionHandler("seekto", e => {
+      if (audio.duration) audio.currentTime = e.seekTime
+    })
+
     function resume() { if (audioctx.state === "suspended") audioctx.resume() }
 
     let prevTrack = null
@@ -11,6 +28,7 @@
 
     $: if ($currentTrack && $currentTrack.id !== prevTrack) {
       prevTrack = $currentTrack.id
+      updateMedia($currentTrack)
       const token = localStorage.getItem("token")
 
       audio.src = `${api.stream($currentTrack.id)}?token=${token}`
@@ -20,6 +38,10 @@
 
       addRecent($currentTrack)
     }
+
+    $: navigator.mediaSession && (
+      navigator.mediaSession.playbackState = $playing ? "playing" : "paused"
+    )
 
     $: if ($playing) { audio.play().catch(() => playing.set(false)) } else { audio.pause() }
 
