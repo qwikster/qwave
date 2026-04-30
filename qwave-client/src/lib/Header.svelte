@@ -21,7 +21,7 @@
 
 <header>
     <img src="{logo}" alt="n" class="logo">
-    <input type="search" class="search" placeholder=" SEARCH..." bind:value={query} on:keydown={keydown}/>
+    <input type="search" class="search" placeholder=" SEARCH..." bind:value={query} onkeydown={keydown}/>
     <span class="clock">{time.toLocaleTimeString()}</span>
 </header>
 
