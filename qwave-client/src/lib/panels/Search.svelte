@@ -61,7 +61,7 @@
             {#each results.artists as artist}
                 <!-- svelte-ignore a11y_click_events_have_key_events -->
                 <!-- svelte-ignore a11y_no_static_element_interactions -->
-                <div class="item" on:click={() => {activeTab.set("artist"); tabMeta.set(artist.id)}}>
+                <div class="track" on:click={() => {activeTab.set("artist"); tabMeta.set(artist.id)}}>
                     <span class="name">{artist.name}</span>
                     <span class="meta">ARTIST</span>
                 </div>
@@ -102,6 +102,9 @@
         display: flex;
         flex-direction: column;
     }
+
+    .status { color: var(--dim); font-size: var(--font-info); text-align: center; }
+    .error { color: var(--secondary); font-size: var(--font-artist); }
 
     .track {
         display: flex;
@@ -148,6 +151,11 @@
     .track-actions {
         display: flex;
         gap: 0.2rem;
+    }
+
+    .meta {
+        color: var(--dim);
+        font-size: var(--font-info);
     }
 
     button {
