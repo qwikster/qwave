@@ -15,6 +15,7 @@
 
       audio.src = `${api.stream($currentTrack.id)}?token=${token}`
       audio.load()
+      resume()
       if ($playing) audio.play()
 
       addRecent($currentTrack)

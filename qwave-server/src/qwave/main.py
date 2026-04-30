@@ -81,7 +81,7 @@ def create_app() -> FastAPI:
     def read_root(): # TODO: This is where the webapp client links in
         config = get_config()
         return {
-            "message": "qWave is running!",
+            "message": "qWave is running! Web client at /app",
             "server_name": config.server_name,
             "version": version("qwave"),
         }

@@ -36,7 +36,7 @@
 
     .main {
         display: grid;
-        grid-template-columns: 24vmin 1fr;
+        grid-template-columns: 30vmin 1fr;
         grid-template-rows: auto 1fr;
         grid-template-areas: "visualizer nowplaying" "sidebar panel";
         flex: 1;
