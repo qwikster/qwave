@@ -14,7 +14,7 @@
     }
 </script>
 
-<button on:click={logout}>LOGOUT</button>
+<button on:click={logout} disabled>LOGOUT</button>
 <p>more settings on full release! &lt;3</p>
 
 <style>

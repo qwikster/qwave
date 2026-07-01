@@ -43,14 +43,8 @@ def get_current_token(authorization: str = Header(None)) -> str:
         raise HTTPException(status_code = status.HTTP_401_UNAUTHORIZED, detail = "Missing auth header or it is in the wrong format")
     return parts[1]
 
-def get_current_user(db: DBDep, token: str = Depends(get_current_token)) -> User:
-    user = auth_service.get_user_by_token(db, token)
-    if not user:
-        raise HTTPException(
-            status_code = status.HTTP_401_UNAUTHORIZED,
-            detail = "Invalid or expired token"
-        )
-    return user
+def get_current_user(db: DBDep) -> None:
+    return None
 
 @router.post("/register", response_model = UserResponse, status_code = status.HTTP_201_CREATED)
 def register(request: RegisterRequest, db: DBDep):

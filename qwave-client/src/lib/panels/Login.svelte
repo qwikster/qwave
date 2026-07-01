@@ -30,11 +30,13 @@
       rerror = ""
       loading = true
       try {
-        const res = await api.register(rusername, rpassword)
-        localStorage.setItem("token", res.token)
-        activeTab.set("nav")
-        activePanel.set("songs")
-        console.log(res)
+        const res = await api.register(rusername, rpassword).then(async () => {
+          const res2 = await api.login(rusername, rpassword)
+          localStorage.setItem("token", res2.token)
+          activeTab.set("nav")
+          activePanel.set("songs")
+          console.log(res2)
+        })
       } catch {
         rerror = "Invalid username or password"
       } finally {

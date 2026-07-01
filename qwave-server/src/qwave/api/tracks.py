@@ -6,6 +6,7 @@ from fastapi import APIRouter, HTTPException, status, UploadFile, File
 from pydantic import BaseModel, Field
 from datetime import datetime
 from sqlalchemy.orm import Session, selectinload, joinedload
+from starlette.status import HTTP_403_FORBIDDEN
 
 from qwave.models import Track, Artist, Genre, Job, track_artists, track_genres
 from qwave.config import get_config
@@ -196,6 +197,8 @@ def get_track(user: UserDep, db: DBDep, track_id: int):
 # TODO: MAYBE: allow adding data to track on upload instead of after
 @router.post("/upload", response_model = UploadResponse)
 async def upload_track(user: UserDep, db: DBDep, file: UploadFile = File(...)):
+    # raise HTTPException(status_code = HTTP_403_FORBIDDEN, detail = "uploads are disabled!")
+
     config = get_config()
     max_size = config.max_upload_size_mb * (1024 ** 2)
 

@@ -63,10 +63,14 @@ def create_app() -> FastAPI:
 
     app.mount("/static", StaticFiles(directory=Path(__file__).resolve().parent / "static"), name = "static")
 
-    app.mount("/app", StaticFiles(
-        directory = Path(__file__).resolve().parent / "static" / "app",
-        html = True
-    ), name = "app")
+    @app.get("/app", tags = ["root"], include_in_schema = False)
+    def read_root():
+        config = get_config()
+        return {
+            "message": "qWave is running! Web client at / (root)",
+            "server_name": config.server_name,
+            "version": version("qwave"),
+        }
 
     app.add_middleware(
         CORSMiddleware,
@@ -76,15 +80,6 @@ def create_app() -> FastAPI:
         allow_methods = ["*"],
         allow_headers = ["*"],
     )
-
-    @app.get("/", tags = ["root"], include_in_schema = False)
-    def read_root(): # TODO: This is where the webapp client links in
-        config = get_config()
-        return {
-            "message": "qWave is running! Web client at /app",
-            "server_name": config.server_name,
-            "version": version("qwave"),
-        }
 
     @app.get("/health", tags = ["root"])
     def health_check():
@@ -107,6 +102,12 @@ def create_app() -> FastAPI:
     app.include_router(tracks.router,  prefix = "/tracks",  tags = ["tracks"])
     app.include_router(stream.router,  prefix = "/stream",  tags = ["stream"])
     app.include_router(search.router,  prefix = "/search",  tags = ["search"])
+
+    app.mount("/", StaticFiles(
+        directory = Path(__file__).resolve().parent / "static" / "app",
+        html = True
+    ), name = "app")
+
     return app
 
 

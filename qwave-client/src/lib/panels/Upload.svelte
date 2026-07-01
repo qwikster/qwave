@@ -53,7 +53,7 @@
           body: form,
         })
 
-        if (!res.ok) throw new Error(`Upload failed: ${res.status}`)
+        if (!res.ok) throw new Error(`Upload failed: ${res.status} (uploads are disabled!)`)
         const data = await res.json()
 
         status = `done!! id: ${data.track_id}`

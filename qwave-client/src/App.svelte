@@ -1,7 +1,11 @@
 <script>
+
   import { onMount } from "svelte"
   import Layout from "./lib/Layout.svelte"
   import { activePanel, activeTab } from "./lib/stores/ui.js"
+  activeTab.set("nav")
+  activePanel.set("songs")
+/*
   import { api } from "./lib/stores/api.js"
 
   onMount(async () => {
@@ -19,6 +23,7 @@
       activeTab.set("login")
     }
   })
+*/
 </script>
 
 <Layout />

@@ -19,8 +19,7 @@ async function post(path, body) {
   const res = await fetch(BASE + path, {
     method: "POST",
     headers: {
-      "Content-Type": "application/json",
-      ...(token ? {Authorization: `Bearer ${token}` } : {})
+      "Content-Type": "application/json"
     },
     body: JSON.stringify(body)
   })

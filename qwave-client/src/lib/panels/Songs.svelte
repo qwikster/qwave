@@ -32,6 +32,12 @@
 </script>
 
 <div class="songs">
+    <div class="note" style="border-bottom: 2px solid var(--primary); display: flex; flex-direction: column;">
+        <span class="track-title" style="color: var(--accent)">
+             this is a demo version!
+        </span>
+        <span class="duration" style="padding-bottom: 4px; color: var(--primary);">authentication and uploads are disabled</span>
+    </div>
     {#if loading}
         <div class="status">loading...</div>
     {:else if error}
